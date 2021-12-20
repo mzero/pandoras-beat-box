@@ -15,18 +15,20 @@ public:
 
   static constexpr float capture_rate = 100.0; // per second
   static const millis_t capture_period = 1000.0 / capture_rate;
-  static const millis_t warmup_period = 5000;
   static const millis_t sample_period = 50;
+  static const millis_t calibration_period = 5000;
 
   using value_t = u_int16_t;
 
-  value_t value()     const { return _value; }
-  value_t min()       const { return _min; }
-  value_t max()       const { return _max; }
-  value_t threshold() const { return _threshold; }
-  bool    warmed()    const { return _warmed; }
+  value_t value()       const { return _value; }
+  value_t min()         const { return _min; }
+  value_t max()         const { return _max; }
+  value_t threshold()   const { return _threshold; }
+  bool    calibrated()  const { return _calibrated; }
 
-  void setThreshold();
+  millis_t calibrationTimeLeft(millis_t now) const;
+
+  void calibrate();
   void printStats(Print&);
 
 private:
@@ -35,7 +37,7 @@ private:
     // FIXME: support using CPlay_CapacitiveSensor on other CP baords
 
   millis_t _next_sample_time;
-  millis_t _warmup_time;
+  millis_t _calibration_time;
 
   static const int sample_count = sample_period / capture_period;
   value_t _samples[sample_count];
@@ -45,7 +47,9 @@ private:
   value_t _min;
   value_t _max;
   value_t _threshold;
-  bool    _warmed;
+  bool    _calibrated;
+
+  void setThreshold();
 };
 
 TouchPad::TouchPad(int pin)
@@ -57,7 +61,7 @@ void TouchPad::begin(millis_t now) {
 
   auto v0 = cap.measure();
   _next_sample_time = now + capture_period;
-  _warmup_time = now + warmup_period;
+  _calibration_time = now + calibration_period;
 
   for (int i = 0; i < sample_count; ++i)
     _samples[i] = v0;
@@ -67,7 +71,7 @@ void TouchPad::begin(millis_t now) {
   _min = v0;
   _max = v0;
   _threshold = v0;
-  _warmed = false;
+  _calibrated = false;
 
   if (plot_touch)
     Serial.print("min\tmax\tvalue\n");
@@ -104,10 +108,19 @@ void TouchPad::loop(millis_t now) {
       Serial.printf("%d\t%d\t%d\n", _min, _max, v);
   }
 
-  if (!_warmed && now >= _warmup_time) {
+  if (!_calibrated && now >= _calibration_time) {
     setThreshold();
-    _warmed = true;
+    _calibrated = true;
   }
+}
+
+void TouchPad::calibrate() {
+  _calibration_time = millis() + calibration_period;
+  _calibrated = false;
+}
+
+millis_t TouchPad::calibrationTimeLeft(millis_t now) const {
+  return _calibration_time <= now ? 0 : _calibration_time - now;
 }
 
 void TouchPad::setThreshold() {
@@ -118,8 +131,8 @@ void TouchPad::printStats(Print& out) {
   static bool first = false;
   if (!first) {
     first = true;
-    out.printf("TouchPad config: capture %5dms, warmup %5dms, sample %5dms, count %3d\n",
-      capture_period, warmup_period, sample_period, sample_count);
+    out.printf("TouchPad config: capture %5dms, calibration %5dms, sample %5dms, count %3d\n",
+      capture_period, calibration_period, sample_period, sample_count);
   }
 
   value_t mid = (_max + _min) / 2;
@@ -144,7 +157,7 @@ void TouchPad::printStats(Print& out) {
   hz = (hz - (float)hz_units) * 10.0f;
   int hz_tenths = (int)(hz + 0.5f);
 
-  if (_warmed) {
+  if (_calibrated) {
     out.printf("TouchPad stats: range [%5d,%5d], thresh %5d, osc %2d.%01dHz\n",
       _min, _max, _threshold, hz_units, hz_tenths);
   }
@@ -158,13 +171,13 @@ void TouchPad::printStats(Print& out) {
 
 TouchPad tp1 = TouchPad(A1);
 
+auto c_off = CircuitPlayground.strip.Color(0, 0, 0);
+auto c_low = CircuitPlayground.strip.Color(30, 30, 30);
+auto c_high = CircuitPlayground.strip.Color(255, 255, 255);
 
 void waitForSerial() {
   bool blink_even = false;
   auto next_update = millis();
-
-  static auto c_low = CircuitPlayground.strip.Color(30, 30, 30);
-  static auto c_high = CircuitPlayground.strip.Color(255, 255, 255);
 
   while (!CircuitPlayground.slideSwitch() && !Serial) {
     if (millis() >= next_update) {
@@ -177,6 +190,31 @@ void waitForSerial() {
     }
   }
 }
+
+
+void displayTouch(millis_t now) {
+  for (int i=0; i<10; ++i) {
+    TouchPad::value_t v0 = (i + 0) * 120;
+    TouchPad::value_t v1 = (i + 1) * 120;
+    TouchPad::value_t v = tp1.max(); // tp1.value();
+
+    auto c = CircuitPlayground.colorWheel(256l*v/20l);
+
+    if (v1 <= tp1.min() || tp1.max() < v0)
+      c = c_off;
+    if (v0 <= v && v < v1)
+      c = (v < tp1.threshold()) ? c : c_high;
+
+    CircuitPlayground.strip.setPixelColor(i, c);
+  }
+}
+
+void displayCalibration(millis_t now) {
+  int v = tp1.calibrationTimeLeft(now) / 1000;
+  for (int i=0; i<10; ++i)
+    CircuitPlayground.strip.setPixelColor(i, i <= v ? c_low : c_off);
+}
+
 
 void setup() {
   // Initialize serial port and circuit playground library.
@@ -199,29 +237,18 @@ int readingsNext = 0;
 void loop() {
   auto now = millis();
 
+  if (CircuitPlayground.leftButton())
+    tp1.calibrate();
+
   tp1.loop(now);
 
   static millis_t neopix_update = 0;
   if (now >= neopix_update) {
     neopix_update = now + 100;
 
-    for (int i=0; i<10; ++i) {
-      TouchPad::value_t v0 = (i + 0) * 120;
-      TouchPad::value_t v1 = (i + 1) * 120;
-      TouchPad::value_t v = tp1.max(); // tp1.value();
+    if (tp1.calibrated())   displayTouch(now);
+    else                    displayCalibration(now);
 
-      auto c = CircuitPlayground.colorWheel(256l*v/20l);
-      static auto c_off = CircuitPlayground.strip.Color(0, 0, 0);
-      static auto c_low = CircuitPlayground.strip.Color(30, 30, 30);
-      static auto c_high = CircuitPlayground.strip.Color(255, 255, 255);
-
-      if (v1 <= tp1.min() || tp1.max() < v0)
-        c = c_off;
-      if (v0 <= v && v < v1)
-        c = (v < tp1.threshold()) ? c : c_high;
-
-      CircuitPlayground.strip.setPixelColor(i, c);
-    }
     CircuitPlayground.strip.show();
   }
 

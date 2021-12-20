@@ -5,8 +5,8 @@
 [x] cap. history buffer
 [x] cap. set threshold command
 [x] call set threshold after <n> ms from boot
-[ ] call set threshold on button A
-[ ] display "calibrating" on LEDs
+[x] call set threshold on button A
+[x] display "calibrating" on LEDs
 [ ] detect hit
 [ ] consider "tap" mode for cap
 
