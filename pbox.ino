@@ -198,7 +198,7 @@ void displayTouch(millis_t now) {
     TouchPad::value_t v1 = (i + 1) * 120;
     TouchPad::value_t v = tp1.max(); // tp1.value();
 
-    auto c = CircuitPlayground.colorWheel(256l*v/20l);
+    auto c = CircuitPlayground.colorWheel(256 * 1200 / v);
 
     if (v1 <= tp1.min() || tp1.max() < v0)
       c = c_off;
