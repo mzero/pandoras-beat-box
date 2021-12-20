@@ -159,14 +159,33 @@ void TouchPad::printStats(Print& out) {
 TouchPad tp1 = TouchPad(A1);
 
 
+void waitForSerial() {
+  bool blink_even = false;
+  auto next_update = millis();
+
+  static auto c_low = CircuitPlayground.strip.Color(30, 30, 30);
+  static auto c_high = CircuitPlayground.strip.Color(255, 255, 255);
+
+  while (!CircuitPlayground.slideSwitch() && !Serial) {
+    if (millis() >= next_update) {
+      next_update += 500;             // blink rate in ms
+      blink_even = !blink_even;
+
+      CircuitPlayground.strip.setPixelColor(0, blink_even ? c_high : c_low);
+      CircuitPlayground.strip.setPixelColor(9, blink_even ? c_low  : c_high);
+      CircuitPlayground.strip.show();
+    }
+  }
+}
+
 void setup() {
   // Initialize serial port and circuit playground library.
   CircuitPlayground.begin();
 
+  CircuitPlayground.strip.setBrightness(20);
+
   Serial.begin(115200);
-  while (!CircuitPlayground.slideSwitch() && !Serial);
-  if (!plot_touch)
-    Serial.println("pandora's box");
+  waitForSerial();
 
   auto now = millis();
   tp1.begin(now);
@@ -185,8 +204,6 @@ void loop() {
   static millis_t neopix_update = 0;
   if (now >= neopix_update) {
     neopix_update = now + 100;
-
-    CircuitPlayground.strip.setBrightness(20);
 
     for (int i=0; i<10; ++i) {
       TouchPad::value_t v0 = (i + 0) * 120;

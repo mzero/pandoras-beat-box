@@ -1,5 +1,7 @@
 # SW TODO
 
+[x] blink while waiting for serial port
+
 [x] cap. history buffer
 [x] cap. set threshold command
 [x] call set threshold after <n> ms from boot
