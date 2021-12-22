@@ -1,10 +1,15 @@
 #include <Adafruit_CircuitPlayground.h>
 
+#include "dmadac.h"
+#include "sound.h"
 #include "touch.h"
 #include "types.h"
 
 
 TouchPad tp1 = TouchPad(A1);
+
+TriangleToneSource tri;
+
 
 auto c_off = CircuitPlayground.strip.Color(0, 0, 0);
 auto c_low = CircuitPlayground.strip.Color(30, 30, 30);
@@ -62,6 +67,9 @@ void setup() {
 
   auto now = millis();
   tp1.begin(now);
+
+  DmaDac::begin();
+  DmaDac::setSource(tri);
 }
 
 const int readingsCount = 10;
@@ -76,6 +84,20 @@ void loop() {
     tp1.calibrate();
 
   tp1.loop(now);
+
+  if (tp1.calibrated()) {
+    static bool pressed = false;
+    if (!pressed) {
+      if (tp1.max() >= tp1.threshold()) {
+        pressed = true;
+        tri.playNote(600, 0.5);
+      }
+    } else {
+      if (tp1.max() < tp1.threshold()) {
+        pressed = false;
+      }
+    }
+  }
 
   static millis_t neopix_update = 0;
   if (now >= neopix_update) {
@@ -92,6 +114,7 @@ void loop() {
     if (now >= stats_update) {
       stats_update = now + 1000;
       tp1.printStats(Serial);
+      DmaDac::report(Serial);
     }
   }
 }

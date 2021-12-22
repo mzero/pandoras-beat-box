@@ -7,15 +7,17 @@
 [x] call set threshold after <n> ms from boot
 [x] call set threshold on button A
 [x] display "calibrating" on LEDs
-[ ] detect hit
+[x] detect hit
 [ ] consider "tap" mode for cap
 
 [ ] read accel every <m> ms (less often than cap)
 
-[ ] sample rate?
-  [] pre-filter & resample sounds
+[x] sample rate 48000
+[x] DMA to DAC
+
+[ ] TPC and DMA interaction bug
+
 [] sample file as data
-[] play sample to DAC
 [] on cap. hit:
   [] set sample play head to sample start
   [] env. sample
