@@ -12,7 +12,7 @@ public:
   void begin(millis_t);
   void loop(millis_t);
 
-  static constexpr float capture_rate = 100.0; // per second
+  static constexpr float capture_rate = 50.0; // per second
   static const millis_t capture_period = 1000.0 / capture_rate;
   static const millis_t sample_period = 50;
   static const millis_t calibration_period = 5000;

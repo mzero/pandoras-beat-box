@@ -120,6 +120,11 @@ namespace DmaDac {
     NVIC_SetPriority(DMAC_IRQn, 0);     // highest priority for NVIC
     NVIC_SetPriority(PTC_IRQn, 1);      // make sure that PTC is lower
       // must be done after Adafruit_ZeroDMA::allocate(), which sets it to 3
+    USB->DEVICE.QOSCTRL.bit.CQOS = 2;
+    USB->DEVICE.QOSCTRL.bit.DQOS = 2;
+    DMAC->QOSCTRL.bit.DQOS = 3;
+    DMAC->QOSCTRL.bit.FQOS = 3;
+    DMAC->QOSCTRL.bit.WRBQOS = 3;
 
     auto desc1 = dma.addDescriptor(
       buffer_a,
