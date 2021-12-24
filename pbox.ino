@@ -72,10 +72,11 @@ void setup() {
   Serial.flush();
 
   auto now = millis();
-  tp1.begin(now);
 
   DmaDac::begin();
   DmaDac::setSource(tri);
+
+  tp1.begin(now);
 }
 
 const int readingsCount = 10;
