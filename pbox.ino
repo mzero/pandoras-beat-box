@@ -29,6 +29,8 @@ void waitForSerial() {
       CircuitPlayground.strip.show();
     }
   }
+  if (!CircuitPlayground.slideSwitch())
+    delay(1000);
 }
 
 
@@ -64,6 +66,10 @@ void setup() {
 
   Serial.begin(115200);
   waitForSerial();
+  Serial.println();
+  Serial.println("> : ~ : .. : Pandora's Drumming Box : .. : ~ : <");
+  Serial.println();
+  Serial.flush();
 
   auto now = millis();
   tp1.begin(now);
