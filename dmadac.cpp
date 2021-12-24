@@ -128,7 +128,7 @@ namespace DmaDac {
 
     auto desc1 = dma.addDescriptor(
       buffer_a,
-      (void *)&DAC->DATA.reg,
+      (void *)&DAC->DATABUF.reg,
       buffer_count,
       DMA_BEAT_SIZE_HWORD,
       true,
@@ -138,7 +138,7 @@ namespace DmaDac {
 
     auto desc2 = dma.addDescriptor(
       buffer_b,
-      (void *)&DAC->DATA.reg,
+      (void *)&DAC->DATABUF.reg,
       buffer_count,
       DMA_BEAT_SIZE_HWORD,
       true,
