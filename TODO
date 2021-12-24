@@ -37,3 +37,31 @@
 [] op amp output - protect it!
 
 
+# DMA issue notes
+
+DMA to the DAC is stalled
+  - for long enough to miss samples even at the slow 48kHz (or even lower)
+when
+  - the program does a read of a Read-Synchronized register
+  - of a peripheral on the same Bridge (C)
+  - and
+    - the peripheral is clocked by something other than GCLK_GEN0
+    - and no read request synchronization steps
+so, such reads must be done either
+  - to peripherals that are clocked by GLCK_GEN0
+  - or, with read request synchronization
+
+Demonstrated this with TC3 and it's COUNT16.COUNT register (which is read-sync)
+But it appears to be the same issue with the FreeTouch code, which reads three
+  such registers during measure():
+    FREQCONTROL, CONVCONTROL, & RESULT
+
+? Haven't test if Write Synchronized registers have the same issue
+  - if so, then the FreeTouch code writes a lot of registers in measure_raw()
+    - even if it doesn't really have to reconfigure the PTC on each measurement
+  - and will need to check which are write sync., and are really needed
+
+A single event seems induce about 185µs of stall
+20 events in a row induce about 3.7ms of stall (which is 185µs x 20),
+  but some DMA transfers do get by in that time
+
