@@ -124,6 +124,7 @@ void loop() {
     CircuitPlayground.strip.show();
   }
 
+#if 0
   if (!plot_touch) {
     static millis_t stats_update = 0;
     if (now >= stats_update) {
@@ -132,4 +133,5 @@ void loop() {
       DmaDac::report(Serial);
     }
   }
+#endif
 }

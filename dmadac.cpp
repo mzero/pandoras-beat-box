@@ -170,11 +170,13 @@ namespace DmaDac {
       sizeof(sample_t) * buffer_count);
 
     out.printf("DMA to DAC: %d buffers sent in %dus, %dHz\n", n, t, int(sr));
+#if 0
     for (int i = 0; i < buffer_count; ++i) {
       if (i % 20 == 0) out.printf("   [%2d]", i);
       out.printf(" %5d", buf[i]);
       if (i % 20 == 19) out.println();
     }
     out.println();
+#endif
   }
 }
