@@ -9,7 +9,8 @@
 
 TouchPad tp1 = TouchPad(A1);
 
-TriangleToneSource tri;
+// TriangleToneSource tri;
+SampleSource samp;
 
 
 auto c_off = CircuitPlayground.strip.Color(0, 0, 0);
@@ -76,13 +77,15 @@ void setup() {
 
   if (fmSetup)
     Serial.println("FileManager is setup and happy!");
+  samp.load("right");
 
   auto now = millis();
 
   DmaDac::begin();
-  DmaDac::setSource(tri);
+  DmaDac::setSource(samp);
 
   tp1.begin(now);
+
 }
 
 const int readingsCount = 10;
@@ -105,7 +108,8 @@ void loop() {
     if (!pressed) {
       if (tp1.max() >= tp1.threshold()) {
         pressed = true;
-        tri.playNote(600, 0.5);
+        // tri.playNote(600.0f, 0.5f);
+        samp.play(0.8f);
       }
     } else {
       if (tp1.max() < tp1.threshold()) {

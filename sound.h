@@ -21,3 +21,21 @@ private:
   UFixed<0, 32> decay;
 };
 
+class SampleSource : public SoundSource {
+public:
+  SampleSource();
+  void load(const char* prefix);
+  void play(float amp);
+
+  virtual void supply(sample_t* buffer, int count);
+
+private:
+  static const int maxSampleCount = 2000;
+
+  SFixed<0, 15> samples[maxSampleCount];
+  int sampleCount;
+
+  int nextSample;
+  UFixed<0, 32> amp;
+  UFixed<0, 32> decay;
+};
