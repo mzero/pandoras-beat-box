@@ -1,6 +1,7 @@
 #include <Adafruit_CircuitPlayground.h>
 
 #include "dmadac.h"
+#include "filemanager.h"
 #include "sound.h"
 #include "touch.h"
 #include "types.h"
@@ -64,12 +65,17 @@ void setup() {
 
   CircuitPlayground.strip.setBrightness(20);
 
+  bool fmSetup = FileManager::setup();
+
   Serial.begin(115200);
   waitForSerial();
   Serial.println();
   Serial.println("> : ~ : .. : Pandora's Drumming Box : .. : ~ : <");
   Serial.println();
   Serial.flush();
+
+  if (fmSetup)
+    Serial.println("FileManager is setup and happy!");
 
   auto now = millis();
 
@@ -85,6 +91,8 @@ int readingsNext = 0;
 
 
 void loop() {
+  FileManager::loop();
+
   auto now = millis();
 
   if (CircuitPlayground.leftButton())
