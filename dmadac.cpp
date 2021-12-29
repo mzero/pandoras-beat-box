@@ -18,7 +18,7 @@ namespace {
   class TestRampSource : public SoundSource {
   public:
     virtual void supply(sample_t* buffer, int count) {
-      sample_t bump = (SAMPLE_PLUS_ONE - SAMPLE_ZERO) / count;
+      sample_t bump = SAMPLE_UNIT / count;
       sample_t s = SAMPLE_ZERO;
       if (even) for (; count--; s += bump) *buffer++ = s;
       else      for (; count--; s -= bump) *buffer++ = s;

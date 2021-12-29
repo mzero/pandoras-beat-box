@@ -5,11 +5,11 @@
 
 using sample_t = uint16_t;
 
-const int SAMPLE_BITS = 10;     // fixed in the SAM D21 architecture
-
-const sample_t SAMPLE_PLUS_ONE  = 0x3ff;
-const sample_t SAMPLE_ZERO      = 0x200;
-const sample_t SAMPLE_NEG_ONE   = 0x001;
+const int SAMPLE_BITS = 10;           // DAC on SAM D21 is only 10 bits
+const sample_t SAMPLE_ZERO = 1 << (SAMPLE_BITS - 1);
+const sample_t SAMPLE_UNIT = SAMPLE_ZERO - 1;
+const sample_t SAMPLE_POS_ONE = SAMPLE_ZERO + SAMPLE_UNIT;
+const sample_t SAMPLE_NEG_ONE = SAMPLE_ZERO - SAMPLE_UNIT;
 
 constexpr float SAMPLE_RATE_TARGET = 48000.0;
 constexpr long SAMPLE_RATE_CPU_DIVISOR = F_CPU / (long)SAMPLE_RATE_TARGET;

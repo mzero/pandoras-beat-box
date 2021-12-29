@@ -23,7 +23,7 @@ void TriangleToneSource::supply(sample_t* buffer, int count) {
     static const sample_fixed_t half(0.5);
     if (s >= half) s = 1 - s;
 
-    static const sample_fixed_t scale(2 * (SAMPLE_PLUS_ONE - SAMPLE_ZERO));
+    static const sample_fixed_t scale(2 * SAMPLE_UNIT);
     s = s * scale;
 
     sample_fixed_t a(amp);
