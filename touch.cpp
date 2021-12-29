@@ -1,14 +1,36 @@
 #include "touch.h"
 #include "types.h"
 
-TouchPad::TouchPad(int pin)
-  : cap(pin, OVERSAMPLE_1, RESISTOR_100K, FREQ_MODE_NONE)
+#include <Arduino.h>
+
+namespace {
+  uint16_t cheapTouchMeasure(int pin) {
+    const int iterations = 10;
+    const uint16_t timeout_ticks = 10000;
+
+    uint16_t ticks = 0;
+
+    for (int i = 0; i < iterations; ++i) {
+      pinMode(pin, OUTPUT);
+      digitalWrite(pin, HIGH);
+      delayMicroseconds(10);    // charge up the pin
+
+      pinMode(pin, INPUT);      // no pull up/down
+      while (digitalRead(pin) == HIGH) {
+        if (ticks >= timeout_ticks) return ticks;
+        ticks += 1;
+      }
+    }
+    return ticks;
+  }
+}
+
+TouchPad::TouchPad(int _pin)
+  : pin(_pin)
   { }
 
 void TouchPad::begin(millis_t now) {
-  cap.begin();
-
-  auto v0 = cap.measure();
+  auto v0 = cheapTouchMeasure(pin);
   _next_sample_time = now + capture_period;
   _calibration_time = now + calibration_period;
 
@@ -32,7 +54,7 @@ void TouchPad::loop(millis_t now) {
     if (_next_sample_time < now)
       _next_sample_time = now + capture_period;
 
-    auto v = cap.measure();
+    auto v = cheapTouchMeasure(pin);
     if (millis() >= _next_sample_time) v = 9;
 
     auto vOld = _samples[_next_sample];

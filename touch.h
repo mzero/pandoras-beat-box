@@ -1,6 +1,7 @@
 #pragma once
 
-#include <utility/Adafruit_CPlay_FreeTouch.h>
+#include <stdint.h>
+#include <Print.h>
 
 #include "types.h"
 
@@ -17,7 +18,7 @@ public:
   static const millis_t sample_period = 50;
   static const millis_t calibration_period = 5000;
 
-  using value_t = u_int16_t;
+  using value_t = uint16_t;
 
   value_t value()       const { return _value; }
   value_t min()         const { return _min; }
@@ -31,9 +32,7 @@ public:
   void printStats(Print&);
 
 private:
-  Adafruit_CPlay_FreeTouch cap;
-    // FIXME: support using Adafruit_FreeTouch on non CPE boards
-    // FIXME: support using CPlay_CapacitiveSensor on other CP baords
+  int pin;
 
   millis_t _next_sample_time;
   millis_t _calibration_time;
