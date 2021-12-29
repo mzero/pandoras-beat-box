@@ -347,20 +347,26 @@ namespace {
   }
 }
 
-uint32_t sampleFileSize(const char* prefix) {
-  FatFile sampleFile;
-  findSampleFile(prefix, sampleFile);
-  return sampleFile.isOpen() ? sampleFile.fileSize() : 0;
-}
+namespace FileManager {
+  uint32_t sampleFileSize(const char* prefix) {
+    FatFile sampleFile;
+    findSampleFile(prefix, sampleFile);
+    uint32_t s = sampleFile.isOpen() ? sampleFile.fileSize() : 0;
+    sampleFile.close();
+    return s;
+  }
 
-uint32_t sampleFileLoad(const char* prefix, uint32_t offset,
-  void* buf, size_t bufSize)
-{
-  FatFile sampleFile;
-  findSampleFile(prefix, sampleFile);
-  if (!sampleFile.isOpen()) return 0;
+  uint32_t sampleFileLoad(const char* prefix, uint32_t offset,
+    void* buf, size_t bufSize)
+  {
+    FatFile sampleFile;
+    findSampleFile(prefix, sampleFile);
+    if (!sampleFile.isOpen()) return 0;
 
-  sampleFile.seekSet(offset);
-  return sampleFile.read(buf, bufSize);
+    sampleFile.seekSet(offset);
+    uint32_t s = sampleFile.read(buf, bufSize);
+    sampleFile.close();
+    return s;
+  }
 }
 
