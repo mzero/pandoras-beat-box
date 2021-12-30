@@ -1,27 +1,22 @@
 # SW TODO
 
-[x] blink while waiting for serial port
-
-[x] cap. history buffer
-[x] cap. set threshold command
-[x] call set threshold after <n> ms from boot
-[x] call set threshold on button A
-[x] display "calibrating" on LEDs
-[x] detect hit
-[ ] consider "tap" mode for cap
-
 [ ] read accel every <m> ms (less often than cap)
 
-[x] sample rate 48000
-[x] DMA to DAC
+[ ] DMA and SPI issue?
 
-[ ] TPC and DMA interaction bug
+[x] samples
+  [x] 8bit at 12kHz (!)
 
-[] sample file as data
-[] on cap. hit:
-  [] set sample play head to sample start
-  [] env. sample
-[] two samples do above, sum together
+[ ] grainer
+  [ ] start on trigger
+  [ ] loop sample from start to end
+  [ ] map touch to volume, slew volume, fast up, slow down
+
+[ ] cycle
+[ ] grain
+
+
+[] left and right samples, sum together
 
 [] on open lid, invert env.
 [] on box tilt in X - adjust sample start ahead or behind
@@ -65,3 +60,20 @@ A single event seems induce about 185µs of stall
 20 events in a row induce about 3.7ms of stall (which is 185µs x 20),
   but some DMA transfers do get by in that time
 
+
+
+# Sample Memory
+
+Totak SRAM           32768
+SRAM usage post-init 13888
+
+available SRAM       18800
+
+Let's assume 16k available for samples
+Split L/R: 8k per side
+
+  16-bit
+    48kHz
+    44.1kHz
+
+  8-bit
