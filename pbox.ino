@@ -59,8 +59,16 @@ void displayCalibration(millis_t now) {
     CircuitPlayground.strip.setPixelColor(i, i <= v ? c_low : c_off);
 }
 
+extern "C" char* sbrk(int incr);
+
+uint32_t sramUsed() {
+  return (uint32_t)(sbrk(0)) - 0x20000000;
+}
+
 
 void setup() {
+  auto s0 = sramUsed();
+
   // Initialize serial port and circuit playground library.
   CircuitPlayground.begin();
 
@@ -86,6 +94,8 @@ void setup() {
 
   tp1.begin(now);
 
+  auto s1 = sramUsed();
+  Serial.printf("sram used: %d static, %d post-init\n", s0, s1);
 }
 
 const int readingsCount = 10;
