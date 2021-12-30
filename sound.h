@@ -21,6 +21,23 @@ private:
   UFixed<0, 32> decay;
 };
 
+class Samples {
+public:
+  Samples();
+  void load(const char* prefix);
+
+  using sample_t = SFixed<0, 7>;
+
+  sample_t operator[](int n) const { return samples[n]; }
+  int      length()          const { return sampleCount; }
+
+private:
+  static const int maxSampleCount = 12000;
+
+  sample_t samples[maxSampleCount];
+  int sampleCount;
+};
+
 class SampleSource : public SoundSource {
 public:
   SampleSource();
@@ -30,10 +47,7 @@ public:
   virtual void supply(sample_t* buffer, int count);
 
 private:
-  static const int maxSampleCount = 12000;
-
-  SFixed<0, 7> samples[maxSampleCount];
-  int sampleCount;
+  Samples samples;
 
   int nextSample;
   UFixed<0, 32> amp;
