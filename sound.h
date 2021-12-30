@@ -30,9 +30,9 @@ public:
   virtual void supply(sample_t* buffer, int count);
 
 private:
-  static const int maxSampleCount = 2000;
+  static const int maxSampleCount = 12000;
 
-  SFixed<0, 15> samples[maxSampleCount];
+  SFixed<0, 7> samples[maxSampleCount];
   int sampleCount;
 
   int nextSample;
