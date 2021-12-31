@@ -10,7 +10,9 @@
   [x] slew up and down to match touch
   [x] restart at start on new trigger
 
-[] left and right samples, sum together
+[x] left and right samples, sum together
+  [ ] sum without stack buffer (?)
+    - need to pre-zero buffer and manage ranges
 [] on box tilt in X - adjust sample start ahead or behind
 
 [] LPF filter output
@@ -38,6 +40,8 @@
 # HW TODO
 
 [] op amp output - protect it!
+[] reconstruction filter, board noise filter
+
 
 
 # DMA issue notes

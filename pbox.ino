@@ -8,10 +8,13 @@
 
 
 TouchPad tp1 = TouchPad(A1);
+TouchPad tp2 = TouchPad(A2);
 
 // TriangleToneSource tri;
 // SampleSource samp;
-SampleGateSource gate;
+SampleGateSource gate1;
+SampleGateSource gate2;
+MixSource mix(gate1, gate2);
 
 auto c_off = CircuitPlayground.strip.Color(0, 0, 0);
 auto c_low = CircuitPlayground.strip.Color(30, 30, 30);
@@ -35,21 +38,30 @@ void waitForSerial() {
     delay(1000);
 }
 
+void displayTouchPixel(int i,
+  TouchPad::value_t v0, TouchPad::value_t v1, const TouchPad& tp)
+{
+  if (v1 <= tp.min() || tp.max() < v0)
+    return;
+
+  TouchPad::value_t v = tp.max(); // tp.value();
+  auto c = CircuitPlayground.colorWheel(256 * 1200 / v);
+
+  if (v0 <= v && v < v1)
+    c = (v < tp.threshold()) ? c : c_high;
+
+  CircuitPlayground.strip.setPixelColor(i, c);
+}
 
 void displayTouch(millis_t now) {
+  CircuitPlayground.strip.clear();
+
   for (int i=0; i<10; ++i) {
     TouchPad::value_t v0 = (i + 0) * 120;
     TouchPad::value_t v1 = (i + 1) * 120;
-    TouchPad::value_t v = tp1.max(); // tp1.value();
 
-    auto c = CircuitPlayground.colorWheel(256 * 1200 / v);
-
-    if (v1 <= tp1.min() || tp1.max() < v0)
-      c = c_off;
-    if (v0 <= v && v < v1)
-      c = (v < tp1.threshold()) ? c : c_high;
-
-    CircuitPlayground.strip.setPixelColor(i, c);
+    displayTouchPixel(i, v0, v1, tp1);
+    displayTouchPixel(9-i, v0, v1, tp2);
   }
 }
 
@@ -86,14 +98,16 @@ void setup() {
   if (fmSetup)
     Serial.println("FileManager is setup and happy!");
   // samp.load("right");
-  gate.load("right");
+  gate1.load("left");
+  gate2.load("right");
 
   auto now = millis();
 
   DmaDac::begin();
-  DmaDac::setSource(gate);
+  DmaDac::setSource(mix);
 
   tp1.begin(now);
+  tp2.begin(now);
 
   auto s1 = sramUsed();
   Serial.printf("sram used: %d static, %d post-init\n", s0, s1);
@@ -109,29 +123,21 @@ void loop() {
 
   auto now = millis();
 
-  if (CircuitPlayground.leftButton())
+  if (CircuitPlayground.leftButton()) {
     tp1.calibrate();
+    tp1.calibrate();
+  }
 
   tp1.loop(now);
+  tp2.loop(now);
 
   if (tp1.calibrated()) {
-#if 0
-    static bool pressed = false;
-    if (!pressed) {
-      if (tp1.max() >= tp1.threshold()) {
-        pressed = true;
-        // tri.playNote(600.0f, 0.5f);
-        samp.play(0.8f);
-      }
-    } else {
-      if (tp1.max() < tp1.threshold()) {
-        pressed = false;
-      }
-    }
-#else
-    gate.gate(tp1.max(),
+    gate1.gate(tp1.max(),
       TouchPad::value_t(200), TouchPad::value_t(800), tp1.threshold());
-#endif
+  }
+  if (tp2.calibrated()) {
+    gate2.gate(tp2.max(),
+      TouchPad::value_t(200), TouchPad::value_t(800), tp2.threshold());
   }
 
   static millis_t neopix_update = 0;
@@ -149,7 +155,9 @@ void loop() {
     static millis_t stats_update = 0;
     if (now >= stats_update) {
       stats_update = now + 1000;
-      // tp1.printStats(Serial);
+      Serial.print("tp1: "); tp1.printStats(Serial);
+      Serial.print("tp2: "); tp2.printStats(Serial);
+      Serial.println("----");
       // DmaDac::report(Serial);
     }
   }

@@ -138,3 +138,20 @@ void SampleGateSource::supply(sample_t* buffer, int count) {
     else                      amp -= (amp - ampTarget) * slewDown;
   }
 }
+
+
+MixSource::MixSource(SoundSource& _s1, SoundSource& _s2)
+  : s1(_s1), s2(_s2)
+  { }
+
+void MixSource::supply(sample_t* buffer, int count) {
+  s1.supply(buffer, count);
+
+  sample_t* buf2 = (sample_t*)(alloca(sizeof(sample_t) * count));
+  s2.supply(buf2, count);
+
+  for (int i = 0; i < count; ++i) {
+    sample_t s = (*buffer + *buf2++) >> 1;
+    *buffer++ = s;
+  }
+}

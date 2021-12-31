@@ -32,7 +32,7 @@ public:
   int      length()          const { return sampleCount; }
 
 private:
-  static const int maxSampleCount = 12000;
+  static const int maxSampleCount = 8000;
 
   sample_t samples[maxSampleCount];
   int sampleCount;
@@ -94,3 +94,16 @@ void SampleGateSource::gate(T cv, T rangeMin, T rangeMax, T threshold) {
   float cvf = float(cv - rangeMin) / float(rangeMax - rangeMin);
   ampTarget = ampMin + amp_t(cvf)*ampRange;
 }
+
+
+class MixSource : public SoundSource {
+public:
+  MixSource(SoundSource& s1, SoundSource& s2);
+
+  virtual void supply(sample_t* buffer, int count);
+
+private:
+  SoundSource& s1;
+  SoundSource& s2;
+};
+
