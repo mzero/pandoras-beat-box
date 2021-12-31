@@ -53,3 +53,42 @@ private:
   UFixed<0, 32> amp;
   UFixed<0, 32> decay;
 };
+
+class SampleGateSource : public SoundSource {
+public:
+  SampleGateSource();
+  void load(const char* prefix);
+
+  template<typename T>
+  void gate(T cv, T rangeMin, T rangeMax, T threshold);
+
+  virtual void supply(sample_t* buffer, int count);
+
+private:
+  Samples samples;
+
+  int nextSample;
+
+  using amp_t = UFixed<0, 32>;
+
+  amp_t amp;
+  amp_t ampTarget;
+};
+
+
+template<typename T>
+void SampleGateSource::gate(T cv, T rangeMin, T rangeMax, T threshold) {
+  if (cv < threshold) {
+    ampTarget = amp_t(0);
+    return;
+  }
+  if (cv < rangeMin) cv = rangeMin;
+  if (cv > rangeMax) cv = rangeMax;
+
+  constexpr amp_t ampMin(0.5f);
+  constexpr amp_t ampMax(0.99f);
+  constexpr amp_t ampRange = ampMax - ampMin;
+
+  float cvf = float(cv - rangeMin) / float(rangeMax - rangeMin);
+  ampTarget = ampMin + amp_t(cvf)*ampRange;
+}

@@ -99,3 +99,42 @@ void SampleSource::supply(sample_t* buffer, int count) {
     *buffer++ = SAMPLE_ZERO;
   }
 }
+
+
+SampleGateSource::SampleGateSource()
+  : nextSample(0), amp(0), ampTarget(0)
+  { }
+
+void SampleGateSource::load(const char* prefix) {
+  samples.load(prefix);
+  nextSample = 0;
+}
+
+void SampleGateSource::supply(sample_t* buffer, int count) {
+  if (samples.length() < 1) {
+    while (count--) {
+      *buffer++ = SAMPLE_ZERO;
+    }
+    return;
+  }
+
+  while (count--) {
+    SFixed<15, 16> v(samples[nextSample++]);
+    if (nextSample >= samples.length()) nextSample = 0;
+
+    v *= SFixed<15, 16>(amp);
+    v *= SAMPLE_UNIT;
+    v += SAMPLE_ZERO;
+
+    *buffer++ = sample_t(v);
+
+    /*
+      slew = 1 - nth root (1 - 1/1db))
+    */
+    constexpr amp_t slewUp(0.14279f);     // 1.2ms
+    constexpr amp_t slewDown(0.00217f);   // 85ms
+
+    if (amp < ampTarget)      amp += (ampTarget - amp) * slewUp;
+    else                      amp -= (amp - ampTarget) * slewDown;
+  }
+}

@@ -10,8 +10,8 @@
 TouchPad tp1 = TouchPad(A1);
 
 // TriangleToneSource tri;
-SampleSource samp;
-
+// SampleSource samp;
+SampleGateSource gate;
 
 auto c_off = CircuitPlayground.strip.Color(0, 0, 0);
 auto c_low = CircuitPlayground.strip.Color(30, 30, 30);
@@ -85,12 +85,13 @@ void setup() {
 
   if (fmSetup)
     Serial.println("FileManager is setup and happy!");
-  samp.load("right");
+  // samp.load("right");
+  gate.load("right");
 
   auto now = millis();
 
   DmaDac::begin();
-  DmaDac::setSource(samp);
+  DmaDac::setSource(gate);
 
   tp1.begin(now);
 
@@ -114,6 +115,7 @@ void loop() {
   tp1.loop(now);
 
   if (tp1.calibrated()) {
+#if 0
     static bool pressed = false;
     if (!pressed) {
       if (tp1.max() >= tp1.threshold()) {
@@ -126,6 +128,10 @@ void loop() {
         pressed = false;
       }
     }
+#else
+    gate.gate(tp1.max(),
+      TouchPad::value_t(200), TouchPad::value_t(800), tp1.threshold());
+#endif
   }
 
   static millis_t neopix_update = 0;
@@ -138,13 +144,13 @@ void loop() {
     CircuitPlayground.strip.show();
   }
 
-#if 0
+#if 1
   if (!plot_touch) {
     static millis_t stats_update = 0;
     if (now >= stats_update) {
       stats_update = now + 1000;
-      tp1.printStats(Serial);
-      DmaDac::report(Serial);
+      // tp1.printStats(Serial);
+      // DmaDac::report(Serial);
     }
   }
 #endif
