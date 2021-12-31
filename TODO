@@ -6,6 +6,18 @@
 
 [x] samples
   [x] 8bit at 12kHz (!)
+[x] gated samples
+  [x] slew up and down to match touch
+  [x] restart at start on new trigger
+
+[] left and right samples, sum together
+[] on box tilt in X - adjust sample start ahead or behind
+
+[] LPF filter output
+[] on box tilt in Y - adjust center frequency
+
+
+
 
 [ ] grainer
   [ ] start on trigger
@@ -16,13 +28,9 @@
 [ ] grain
 
 
-[] left and right samples, sum together
 
 [] on open lid, invert env.
-[] on box tilt in X - adjust sample start ahead or behind
 
-[] LPF filter output
-[] on box tilt in Y - adjust center frequency
 
 [] Lightshow of some sort?
 

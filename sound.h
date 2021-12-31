@@ -82,6 +82,8 @@ void SampleGateSource::gate(T cv, T rangeMin, T rangeMax, T threshold) {
     ampTarget = amp_t(0);
     return;
   }
+  if (ampTarget == amp_t(0)) nextSample = 0;
+
   if (cv < rangeMin) cv = rangeMin;
   if (cv > rangeMax) cv = rangeMax;
 
