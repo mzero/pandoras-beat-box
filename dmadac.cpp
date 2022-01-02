@@ -47,15 +47,20 @@ namespace {
     dmaSource->supply(b, buffer_count);
   }
 
-  volatile int dmaCount = 0;
+  volatile unsigned int dmaCount = 0;
+  volatile unsigned long dmaTime = 0;
 
   void dmaDoneCallback(Adafruit_ZeroDMA* _dma) {
     if (_dma != &dma) return;
     dmaCount += 1;
+    auto t0 = micros();
 
     sample_t* buf = transferring_buffer_a ? buffer_a : buffer_b;
     transferring_buffer_a = !transferring_buffer_a;
     fillBuffer(buf);
+
+    auto t1 = micros();
+    dmaTime += t1 - t0;   // should still work if it rolls over!
   }
 }
 
@@ -162,15 +167,22 @@ namespace DmaDac {
     int n = d - lastDmaCount;
     lastDmaCount = d;
 
+    static unsigned long lastDmaTime = 0;
+    unsigned long u = dmaTime;
+    unsigned long v = u - lastDmaTime;
+    lastDmaTime = u;
+
     float sr = float(n * buffer_count) * 1000000.0f / float(t);
 
+    out.printf("DMA to DAC: %d buffers sent in %dus, %dHz\n", n, t, int(sr));
+    out.printf("   %dµs filling buffers, %dµs/buffer\n", v, v / n);
+
+#if 0
     sample_t buf[buffer_count];
     memcpy(buf,
       transferring_buffer_a ? buffer_a : buffer_b,
       sizeof(sample_t) * buffer_count);
 
-    out.printf("DMA to DAC: %d buffers sent in %dus, %dHz\n", n, t, int(sr));
-#if 0
     for (int i = 0; i < buffer_count; ++i) {
       if (i % 20 == 0) out.printf("   [%2d]", i);
       out.printf(" %5d", buf[i]);

@@ -155,10 +155,10 @@ void loop() {
     static millis_t stats_update = 0;
     if (now >= stats_update) {
       stats_update = now + 1000;
-      Serial.print("tp1: "); tp1.printStats(Serial);
-      Serial.print("tp2: "); tp2.printStats(Serial);
-      Serial.println("----");
-      // DmaDac::report(Serial);
+      // Serial.print("tp1: "); tp1.printStats(Serial);
+      // Serial.print("tp2: "); tp2.printStats(Serial);
+      // Serial.println("----");
+      DmaDac::report(Serial);
     }
   }
 #endif
