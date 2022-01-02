@@ -68,7 +68,7 @@ void displayTouch(millis_t now) {
 void displayCalibration(millis_t now) {
   int v = tp1.calibrationTimeLeft(now) / 1000;
   for (int i=0; i<10; ++i)
-    CircuitPlayground.strip.setPixelColor(i, i <= v ? c_low : c_off);
+    CircuitPlayground.strip.setPixelColor(i, i <= v ? c_high : c_off);
 }
 
 extern "C" char* sbrk(int incr);
@@ -84,7 +84,7 @@ void setup() {
   // Initialize serial port and circuit playground library.
   CircuitPlayground.begin();
 
-  CircuitPlayground.strip.setBrightness(20);
+  CircuitPlayground.strip.setBrightness(5);
 
   bool fmSetup = FileManager::setup();
 
