@@ -122,12 +122,23 @@ void SampleGateSource::supply(sample_t* buffer, int count) {
     SFixed<15, 16> v(samples[nextSample++]);
     if (nextSample >= samples.length()) nextSample = 0;
 
+#if 0
     v *= SFixed<15, 16>(amp);
     v *= SAMPLE_UNIT;
     v += SAMPLE_ZERO;
 
     *buffer++ = sample_t(v);
+#else
+    SFixed<15, 16> w(samples[nextSample]);
+    SFixed<15, 16> a(amp);
+    a *= SAMPLE_UNIT / 4;
 
+    *buffer++ = sample_t((v + v + v + v) * a + SAMPLE_ZERO);
+    *buffer++ = sample_t((v + v + v + w) * a + SAMPLE_ZERO);
+    *buffer++ = sample_t((v + v + w + w) * a + SAMPLE_ZERO);
+    *buffer++ = sample_t((v + w + w + w) * a + SAMPLE_ZERO);
+    count -= 3;
+#endif
     /*
       slew = 1 - nth root (1 - 1/1db))
     */

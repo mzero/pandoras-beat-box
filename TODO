@@ -1,24 +1,30 @@
 # SW TODO
 
-[ ] read accel every <m> ms (less often than cap)
+[ ] why is 12kHz sampling actually 13.7kHz?
+[x] try over sampling.... 4x? worth it?  YES!
+
+[ ] parts ordering
+  [x] find board mount power switch
+  [ ] figure out wiring harness
+  [ ] inventory needed discretes
+
+
+
 
 [ ] DMA and SPI issue?
 
-[x] samples
-  [x] 8bit at 12kHz (!)
-[x] gated samples
-  [x] slew up and down to match touch
-  [x] restart at start on new trigger
+[ ] sum without stack buffer (?)
+  - need to pre-zero buffer and manage ranges
 
-[x] left and right samples, sum together
-  [ ] sum without stack buffer (?)
-    - need to pre-zero buffer and manage ranges
+
+
+[ ] read accel every <m> ms (less often than cap)
 [] on box tilt in X - adjust sample start ahead or behind
 
 [] LPF filter output
 [] on box tilt in Y - adjust center frequency
 
-
+[ ] HW: try close placement of touch resistors and wiring
 
 
 [ ] grainer
