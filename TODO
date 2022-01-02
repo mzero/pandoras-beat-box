@@ -1,22 +1,7 @@
-# SW TODO
-
-[ ] why is 12kHz sampling actually 13.7kHz?
-[x] try over sampling.... 4x? worth it?  YES!
-
-[ ] parts ordering
-  [x] find board mount power switch
-  [ ] figure out wiring harness
-  [ ] inventory needed discretes
-
-
-
-
-[ ] DMA and SPI issue?
+# TODO
 
 [ ] sum without stack buffer (?)
   - need to pre-zero buffer and manage ranges
-
-
 
 [ ] read accel every <m> ms (less often than cap)
 [] on box tilt in X - adjust sample start ahead or behind
@@ -24,8 +9,14 @@
 [] LPF filter output
 [] on box tilt in Y - adjust center frequency
 
-[ ] HW: try close placement of touch resistors and wiring
+[ ] HW: go back to 1M touch resistors
 
+[ ] DMA and SPI issue?
+
+
+## Later
+
+[ ] why is 12kHz sampling actually 13.7kHz?
 
 [ ] grainer
   [ ] start on trigger
@@ -41,12 +32,6 @@
 
 
 [] Lightshow of some sort?
-
-
-# HW TODO
-
-[] op amp output - protect it!
-[] reconstruction filter, board noise filter
 
 
 
