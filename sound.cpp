@@ -85,13 +85,8 @@ void SampleSource::play(float ampf) {
 
 void SampleSource::supply(sample_t* buffer, int count) {
   while (nextSample < samples.length() && count) {
-    SFixed<15, 16> v(samples[nextSample++]);
-    v *= SFixed<15, 16>(amp);
-    v *= SAMPLE_UNIT;
-    v += SAMPLE_ZERO;
-
     count -= 1;
-    *buffer++ = sample_t(v);
+    *buffer++ = sample_t(samples[nextSample++]);
 
     amp *= decay;
   }
@@ -122,23 +117,16 @@ void SampleGateSource::supply(sample_t* buffer, int count) {
     SFixed<15, 16> v(samples[nextSample++]);
     if (nextSample >= samples.length()) nextSample = 0;
 
-#if 0
-    v *= SFixed<15, 16>(amp);
-    v *= SAMPLE_UNIT;
-    v += SAMPLE_ZERO;
-
-    *buffer++ = sample_t(v);
-#else
     SFixed<15, 16> w(samples[nextSample]);
     SFixed<15, 16> a(amp);
-    a *= SAMPLE_UNIT / 4;
+    a /= 4;
 
-    *buffer++ = sample_t((v + v + v + v) * a + SAMPLE_ZERO);
-    *buffer++ = sample_t((v + v + v + w) * a + SAMPLE_ZERO);
-    *buffer++ = sample_t((v + v + w + w) * a + SAMPLE_ZERO);
-    *buffer++ = sample_t((v + w + w + w) * a + SAMPLE_ZERO);
+    *buffer++ = sample_t((v + v + v + v) * a);
+    *buffer++ = sample_t((v + v + v + w) * a);
+    *buffer++ = sample_t((v + v + w + w) * a);
+    *buffer++ = sample_t((v + w + w + w) * a);
     count -= 3;
-#endif
+
     /*
       slew = 1 - nth root (1 - 1/1db))
     */
@@ -162,7 +150,7 @@ void MixSource::supply(sample_t* buffer, int count) {
   s2.supply(buf2, count);
 
   for (int i = 0; i < count; ++i) {
-    sample_t s = (*buffer + *buf2++) >> 1;
+    sample_t s = (*buffer + *buf2++);
     *buffer++ = s;
   }
 }

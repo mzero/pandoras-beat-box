@@ -2,7 +2,23 @@
 
 #include <FixedPoints.h>
 
-#include "dmadac.h"
+using sample_t = SFixed<2, 13>;
+
+constexpr sample_t SAMPLE_ZERO = sample_t(0);
+constexpr sample_t SAMPLE_UNIT = sample_t(1);
+constexpr sample_t SAMPLE_POS_ONE = sample_t(1.0);
+constexpr sample_t SAMPLE_NEG_ONE = sample_t(-1.0);
+
+constexpr float SAMPLE_RATE_TARGET = 48000.0;
+constexpr long SAMPLE_RATE_CPU_DIVISOR = F_CPU / (long)SAMPLE_RATE_TARGET;
+constexpr float SAMPLE_RATE = (float)F_CPU / (float)SAMPLE_RATE_CPU_DIVISOR;
+
+
+class SoundSource {
+public:
+  virtual void supply(sample_t* buffer, int count) = 0;
+    // NB: Will get called at interrupt time!
+};
 
 
 class TriangleToneSource : public SoundSource {

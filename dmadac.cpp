@@ -34,6 +34,15 @@ namespace {
 SoundSource& zeroSource = _zeroSource;
 
 namespace {
+
+  using dac_t = uint16_t;
+
+  constexpr int DAC_BITS = 10;           // DAC on SAM D21 is only 10 bits
+  constexpr dac_t DAC_ZERO = 1 << (DAC_BITS - 1);
+  constexpr dac_t DAC_UNIT = DAC_ZERO - 1;
+  constexpr dac_t DAC_POS_ONE = DAC_ZERO + DAC_UNIT;
+  constexpr dac_t DAC_NEG_ONE = DAC_ZERO - DAC_UNIT;
+
   SoundSource* dmaSource = &zeroSource;
 
   Adafruit_ZeroDMA dma;
@@ -58,6 +67,24 @@ namespace {
     sample_t* buf = transferring_buffer_a ? buffer_a : buffer_b;
     transferring_buffer_a = !transferring_buffer_a;
     fillBuffer(buf);
+
+    static_assert(sizeof(dac_t) == sizeof(sample_t),
+      "dac_t and sample_t not the same size");
+      // because a buffer of samples is converted into a buffer of dac values
+
+    using sdac_t = SFixed<15, 16>;
+    constexpr sdac_t SDAC_MAX = sdac_t(DAC_UNIT) >> (DAC_BITS - 1);
+    constexpr sdac_t SDAC_MIN = - SDAC_MAX;
+
+    for (int i = buffer_count; i; --i, ++buf) {
+      sdac_t u(*buf);
+      dac_t v;
+      if (u > SDAC_MAX)       v = DAC_POS_ONE;
+      else if (u < SDAC_MIN)  v = DAC_NEG_ONE;
+      else
+        v = dac_t((u << (DAC_BITS - 1)) + sdac_t(DAC_ZERO));
+      *((dac_t*)buf) = v;
+    }
 
     auto t1 = micros();
     dmaTime += t1 - t0;   // should still work if it rolls over!
@@ -104,8 +131,8 @@ namespace DmaDac {
     // pinMode(11, OUTPUT);
     // digitalWrite(11, LOW); // Switch off speaker (DAC to A0 pin only)
 #endif
-    analogWriteResolution(SAMPLE_BITS); // Let Arduino core initialize the DAC,
-    analogWrite(A0, SAMPLE_ZERO);       // ain't nobody got time for that!
+    analogWriteResolution(DAC_BITS); // Let Arduino core initialize the DAC,
+    analogWrite(A0, DAC_ZERO);       // ain't nobody got time for that!
     DAC->CTRLB.bit.REFSEL = 0;          // VMAX = 1.0V
     while (DAC->STATUS.bit.SYNCBUSY)
       ;
