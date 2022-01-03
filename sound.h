@@ -104,7 +104,7 @@ void SampleGateSource::gate(T cv, T rangeMin, T rangeMax, T threshold) {
   if (cv > rangeMax) cv = rangeMax;
 
   constexpr amp_t ampMin(0.5f);
-  constexpr amp_t ampMax(0.99f);
+  constexpr amp_t ampMax(0.90f);
   constexpr amp_t ampRange = ampMax - ampMin;
 
   float cvf = float(cv - rangeMin) / float(rangeMax - rangeMin);
