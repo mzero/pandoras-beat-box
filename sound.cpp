@@ -154,3 +154,31 @@ void MixSource::supply(sample_t* buffer, int count) {
     *buffer++ = s;
   }
 }
+
+FilterSource::FilterSource(SoundSource& _in)
+  : in(_in), b0(0), b1(1)
+{
+  setFreqAndQ(2540.0f, 0.2f);
+}
+
+void FilterSource::setFreqAndQ(float freq, float q)
+{
+  if (freq > 12000.0f) freq = 12000.0f;
+  if (freq < 20.0f) freq = 20.0f;
+  float fsr = freq/SAMPLE_RATE;
+  f = fsr;
+  fb = q + q/(1.0 - fsr);
+}
+
+void FilterSource::supply(sample_t* buffer, int count) {
+  in.supply(buffer, count);
+
+  while (count--) {
+    sample_t s_in = *buffer;
+
+    b0 = b0 + f * (s_in - b0 + fb * (b0 - b1));
+    b1 = b1 + f * (b0 - b1);
+
+    *buffer++ = b1;
+  }
+}

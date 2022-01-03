@@ -4,10 +4,12 @@
   - need to pre-zero buffer and manage ranges
 
 [ ] read accel every <m> ms (less often than cap)
-[] on box tilt in X - adjust sample start ahead or behind
+[ ] on box tilt in X - adjust sample start ahead or behind
 
-[] LPF filter output
-[] on box tilt in Y - adjust center frequency
+[x] LPF filter output
+[x] on box tilt in Y - adjust center frequency
+
+[ ] Filter tilt needs tuning once in box
 
 [ ] HW: go back to 1M touch resistors
 

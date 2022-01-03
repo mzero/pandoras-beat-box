@@ -123,3 +123,21 @@ private:
   SoundSource& s2;
 };
 
+
+class FilterSource : public SoundSource {
+public:
+  FilterSource(SoundSource& in);
+  void setFreqAndQ(float freq, float q);
+  void retune(float freqFactor);
+
+  virtual void supply(sample_t* buffer, int count);
+
+private:
+  SoundSource& in;
+
+  sample_t f;
+  sample_t fb;
+
+  sample_t b0;
+  sample_t b1;
+};

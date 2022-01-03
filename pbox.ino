@@ -15,6 +15,7 @@ TouchPad tp2 = TouchPad(A2);
 SampleGateSource gate1;
 SampleGateSource gate2;
 MixSource mix(gate1, gate2);
+FilterSource filt(mix);
 
 auto c_off = CircuitPlayground.strip.Color(0, 0, 0);
 auto c_low = CircuitPlayground.strip.Color(30, 30, 30);
@@ -104,7 +105,7 @@ void setup() {
   auto now = millis();
 
   DmaDac::begin();
-  DmaDac::setSource(mix);
+  DmaDac::setSource(filt);
 
   tp1.begin(now);
   tp2.begin(now);
@@ -140,6 +141,15 @@ void loop() {
       TouchPad::value_t(200), TouchPad::value_t(800), tp2.threshold());
   }
 
+  static millis_t accel_update = 0;
+  if (now >= accel_update) {
+    accel_update = now + 250;
+
+    auto y = CircuitPlayground.motionY();
+    float f = 2000.0f * expf((y+4.5f)/3.0f);
+    filt.setFreqAndQ(f, 0.2);
+  }
+
   static millis_t neopix_update = 0;
   if (now >= neopix_update) {
     neopix_update = now + 100;
@@ -150,7 +160,7 @@ void loop() {
     CircuitPlayground.strip.show();
   }
 
-#if 1
+#if 0
   if (!plot_touch) {
     static millis_t stats_update = 0;
     if (now >= stats_update) {
