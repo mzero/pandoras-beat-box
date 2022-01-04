@@ -8,6 +8,8 @@
 #include <Adafruit_TinyUSB.h>
 #include <Adafruit_SleepyDog.h>
 
+#include "nvmmanager.h"
+
 namespace {
 
   // On-board external flash (QSPI or SPI) macros should already
@@ -30,8 +32,13 @@ namespace {
 
   char msgBuf[128];
   bool msgWaiting = false;
+  bool holdMessages = true;
 
   void queueMsg(const char* msg) {
+    if (!holdMessages) {
+      Serial.println(msg);
+      return;
+    }
     if (msgWaiting) return;
     strncpy(msgBuf, msg, sizeof(msgBuf));
     msgBuf[sizeof(msgBuf)-1] = '\0';
@@ -43,6 +50,7 @@ namespace {
       Serial.println(msgBuf);
       msgWaiting = false;
     }
+    holdMessages = false;
   }
 
   void statusMsg(const char* msg) {
@@ -220,7 +228,9 @@ namespace {
     FatFile file;
     return file.open(fatfs.vwd(), path, FILE_WRITE);
   }
+}
 
+namespace FileManager {
   bool setupFileSystem() {
     if (!flash.begin()) {
       errorMsg("Failed to initialize flash chip.");
@@ -261,7 +271,9 @@ namespace {
 
     return true;
   }
+}
 
+namespace {
 /* -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- */
 
   bool matchSampleFileName(const char* prefix, FatFile& file) {
@@ -306,61 +318,162 @@ namespace {
       errorMsgf("no %s*.raw file found", prefix);
     }
   }
+
+
+  struct FlashedFileInfo {
+    void* data;
+    size_t size;
+
+    uint16_t modTime;
+    uint16_t modDate;
+  };
+
+  struct FlashedDir {
+    uint32_t magic;
+    static const uint32_t magic_marker = 0x69A57FDA;
+
+    FlashedFileInfo leftFile;
+    FlashedFileInfo rightFile;
+  };
+
+  bool checkFile(const char* prefix,
+    FatFile& file, bool& flash, FlashedFileInfo& info) {
+
+    findSampleFile(prefix, file);
+    if (!file.isOpen()) {
+      statusMsgf("no %s file found", prefix);
+      // no left file found -- okay
+      if (info.size > 0) {
+        info.size = 0;
+        flash = true;
+        return true;
+      }
+    }
+
+    size_t s = file.fileSize();
+
+    dir_t d;
+    if (!file.dirEntry(&d)) {
+      errorMsgf("dirEntry on %s file failed", prefix);
+      return false;
+    }
+
+    statusMsgf("%s file %d bytes, %04x:%04x mod",
+      prefix, s, d.lastWriteDate, d.lastWriteTime);
+
+    if (s == info.size
+    || d.lastWriteTime == info.modTime
+    || d.lastWriteDate == info.modDate) {
+      return true;
+    }
+
+    info.size = s;
+    info.modTime = d.lastWriteTime;
+    info.modDate = d.lastWriteDate;
+    flash = true;
+    return true;
+  }
+
+  inline size_t blockRound(size_t x) {
+    const size_t b1 = NvmManager::block_size - 1;
+    return (x + b1) & ~b1;
+  }
+
+  inline void* blockAfter(void* a, size_t x) {
+    return (void*)((uint8_t*)a + blockRound(x));
+  }
+
+  bool flashFromFile(FatFile& file, FlashedFileInfo& info) {
+    uint8_t buffer[NvmManager::block_size];
+
+    size_t s = info.size;
+    void* dst = info.data;
+
+    while (s > 0) {
+      auto r = file.read(buffer, min(s, NvmManager::block_size));
+      if (r <= 0) {
+        errorMsg("error reading file");
+        return false;
+      }
+      if (!NvmManager::dataWrite(dst, buffer, r)) {
+        errorMsg("error flashing file");
+        return false;
+      }
+      dst = ((uint8_t*)dst) + NvmManager::block_size;
+      s -= r;
+    }
+
+    return true;
+  }
 }
 
 namespace FileManager {
 
   bool locateFiles(SampleFiles& sf) {
-    if (!setupFileSystem()) return false;
+    void* dataBegin = NvmManager::dataBegin();
+    void* fileBegin = blockAfter(dataBegin, sizeof(FlashedDir));
+    void* dataEnd = NvmManager::dataEnd();
 
-    static uint8_t storage[16000];
+    FlashedDir fd = *(FlashedDir*)dataBegin;
 
-    uint8_t *buf = storage;
-    size_t storageLeft = sizeof(storage);
+    bool flashLeft = false;
+    bool flashRight = false;
+    bool flashDir = false;
+
+    if (fd.magic != FlashedDir::magic_marker) {
+      statusMsg("initing dir");
+      fd.magic = FlashedDir::magic_marker;
+      fd.leftFile.data = fileBegin;
+      fd.leftFile.size = 0;
+      fd.rightFile.data = fileBegin;
+      fd.rightFile.size = 0;
+
+      flashDir = true;
+    }
 
     FatFile leftFile;
-    findSampleFile("left", leftFile);
-    if (leftFile.isOpen()) {
-      auto s = leftFile.fileSize();
-      s = min(s, 8000); // FIXME: remove this!!!
-      if (s > storageLeft) {
-        errorMsg("left file too big");
-        return false;
-      }
-
-      auto t = leftFile.read(buf, s);
-      if (t != s) {
-        errorMsg("problem reading left sample file");
-        return false;
-      }
-      sf.leftSize = s;
-      sf.leftData = buf;
-      buf += s;
-      storageLeft -= s;
-
-      leftFile.close();
-    }
-
     FatFile rightFile;
-    findSampleFile("right", rightFile);
-    if (rightFile.isOpen()) {
-      auto s = rightFile.fileSize();
-      s = min(s, 8000); // FIXME: remove this!!!
-      if (s > storageLeft) {
-        errorMsg("right file too big");
-        return false;
-      }
+    if (!checkFile("left",  leftFile,  flashLeft,  fd.leftFile))  return false;
+    if (!checkFile("right", rightFile, flashRight, fd.rightFile)) return false;
 
-      auto t = rightFile.read(buf, s);
-      if (t != s) {
-        errorMsg("problem reading right sample file");
-        return false;
-      }
-      sf.rightSize = s;
-      sf.rightData = buf;
-
-      rightFile.close();
+    if (blockAfter(blockAfter(fileBegin, fd.leftFile.size), fd.rightFile.size) >= dataEnd) {
+      errorMsg("left and right files are too large to flash");
+      return false;
     }
+
+    if (flashLeft) {
+      fd.leftFile.data = fileBegin;
+      statusMsgf("flashing left file to %08x for %d bytes",
+        fd.leftFile.data, fd.leftFile.size);
+      if (!flashFromFile(leftFile, fd.leftFile)) {
+        errorMsg("error flashing left file");
+        return false;
+      }
+    }
+    if (flashRight) {
+      fd.rightFile.data = (void*)((uint8_t*)dataEnd - blockRound(fd.rightFile.size));
+      statusMsgf("flashing right file to %08x for %d bytes",
+        fd.rightFile.data, fd.rightFile.size);
+      if (!flashFromFile(rightFile, fd.rightFile)) {
+        errorMsg("error flashing right file");
+        return false;
+      }
+    }
+    if (flashLeft || flashRight || flashDir) {
+      statusMsg("flashing dir");
+      if (!NvmManager::dataWrite(dataBegin, (void*)&fd, sizeof(FlashedDir))) {
+        errorMsg("error flashing directory");
+        return false;
+      }
+    }
+
+    statusMsg("using flashed files:");
+    statusMsgf("   left at %08x for %8d bytes", fd.leftFile.data, fd.leftFile.size);
+    statusMsgf("  right at %08x for %8d bytes", fd.rightFile.data, fd.rightFile.size);
+    sf.leftData = fd.leftFile.data;
+    sf.leftSize = fd.leftFile.size;
+    sf.rightData = fd.rightFile.data;
+    sf.rightSize = fd.rightFile.size;
 
     return true;
   }

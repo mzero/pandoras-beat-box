@@ -84,11 +84,9 @@ void setup() {
 
   // Initialize serial port and circuit playground library.
   CircuitPlayground.begin();
-
   CircuitPlayground.strip.setBrightness(5);
 
-  FileManager::SampleFiles sf;
-  bool fmSetup = FileManager::locateFiles(sf);
+  bool fmSetup = FileManager::setupFileSystem();
 
   Serial.begin(115200);
   waitForSerial();
@@ -99,12 +97,15 @@ void setup() {
 
   if (fmSetup) {
     Serial.println("FileManager is setup and happy!");
+  }
+  FileManager::showMessages();
+
+  if (fmSetup) {
+    FileManager::SampleFiles sf;
+    if (FileManager::locateFiles(sf)) {
     gate1.load(Samples(sf.leftData, sf.leftSize));
     gate2.load(Samples(sf.rightData, sf.rightSize));
   }
-  else {
-    Serial.println("FileManager is unhappy!");
-    FileManager::showMessages();
   }
 
   auto now = millis();
