@@ -39,8 +39,9 @@ private:
 
 class Samples {
 public:
-  Samples();
-  void load(const char* prefix);
+  Samples() : samples(nullptr), sampleCount(0) { }
+  Samples(void* data, size_t len)
+    : samples((sample_t*)data), sampleCount(len / sizeof(sample_t)) { }
 
   using sample_t = SFixed<0, 7>;
 
@@ -48,16 +49,15 @@ public:
   int      length()          const { return sampleCount; }
 
 private:
-  static const int maxSampleCount = 8000;
-
-  sample_t samples[maxSampleCount];
+  sample_t* samples;
   int sampleCount;
+
 };
 
 class SampleSource : public SoundSource {
 public:
   SampleSource();
-  void load(const char* prefix);
+  void load(const Samples& s) { samples = s; }
   void play(float amp);
 
   virtual void supply(sample_t* buffer, int count);
@@ -73,7 +73,7 @@ private:
 class SampleGateSource : public SoundSource {
 public:
   SampleGateSource();
-  void load(const char* prefix);
+  void load(const Samples& s) { samples = s; }
 
   template<typename T>
   void gate(T cv, T rangeMin, T rangeMax, T threshold);

@@ -5,12 +5,16 @@
 #include "types.h"
 
 namespace FileManager {
-  bool setup();
-  void loop();
+  struct SampleFiles {
+    size_t    leftSize;
+    void *    leftData;
 
-  bool filesUpdated();
-  uint32_t sampleFileSize(const char* prefix);
-  uint32_t sampleFileLoad(const char* prefix, uint32_t offset,
-    void* buf, size_t bufSize);
-    // FIX THIS API
+    size_t    rightSize;
+    void *    rightData;
+  };
+
+  bool locateFiles(SampleFiles&);
+  void showMessages();
 }
+
+

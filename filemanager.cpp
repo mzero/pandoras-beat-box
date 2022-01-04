@@ -24,16 +24,8 @@ namespace {
   #endif
 
   Adafruit_SPIFlash flash(&flashTransport);
-
   FatFileSystem fatfs;
-
   Adafruit_USBD_MSC usb_msc;
-
-  uint32_t changeSettledAt = 0;
-
-  void noteFileSystemChange() {
-    changeSettledAt = millis() + 250;
-  }
 
 
   char msgBuf[128];
@@ -80,27 +72,9 @@ namespace {
     va_end(args);
     errorMsg(buf);
   }
-}
-
-namespace FileManager {
-
-  bool changed() {
-    if (changeSettledAt > 0 && changeSettledAt < millis()) {
-      changeSettledAt = 0;
-      return true;
-    }
-    return false;
-  }
-
-  bool changing() {
-    return changeSettledAt > 0;
-  }
-}
 
 
 /* -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- */
-
-namespace {
 
   int32_t msc_read_cb (uint32_t lba, void* buffer, uint32_t bufsize)
   {
@@ -116,11 +90,10 @@ namespace {
   {
     flash.syncBlocks();
     fatfs.cacheClear();
-    noteFileSystemChange();
   }
 
   bool setupMSC() {
-    usb_msc.setID("e.k", "pandora-beat-box", "1.0");
+    usb_msc.setID("e.k", "Pandora Beat Box", "1.0");
     usb_msc.setReadWriteCallback(msc_read_cb, msc_write_cb, msc_flush_cb);
     usb_msc.setCapacity(flash.pageSize()*flash.numPages()/512, 512);
     usb_msc.setUnitReady(true);
@@ -247,16 +220,12 @@ namespace {
     FatFile file;
     return file.open(fatfs.vwd(), path, FILE_WRITE);
   }
-}
-namespace FileManager {
 
-  bool setup() {
+  bool setupFileSystem() {
     if (!flash.begin()) {
       errorMsg("Failed to initialize flash chip.");
       return false;
     }
-    flashTransport.setClockSpeed(4000000, 4000000);
-      // flash is just flaky at higher speeds it seems
 
     if (!fatfs.begin(&flash)) {
       statusMsg("Formatting internal flash");
@@ -285,8 +254,6 @@ namespace FileManager {
       delay(3000);
     }
 
-    noteFileSystemChange();
-
     if (!setupMSC()) {
       errorMsg("Failed to setup USB drive.");
       return false;
@@ -295,14 +262,8 @@ namespace FileManager {
     return true;
   }
 
-  void loop() {
-    showMsg();
-  }
-}
-
 /* -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- */
 
-namespace {
   bool matchSampleFileName(const char* prefix, FatFile& file) {
     char name[512];
     file.getName(name, sizeof(name));
@@ -348,25 +309,64 @@ namespace {
 }
 
 namespace FileManager {
-  uint32_t sampleFileSize(const char* prefix) {
-    FatFile sampleFile;
-    findSampleFile(prefix, sampleFile);
-    uint32_t s = sampleFile.isOpen() ? sampleFile.fileSize() : 0;
-    sampleFile.close();
-    return s;
+
+  bool locateFiles(SampleFiles& sf) {
+    if (!setupFileSystem()) return false;
+
+    static uint8_t storage[16000];
+
+    uint8_t *buf = storage;
+    size_t storageLeft = sizeof(storage);
+
+    FatFile leftFile;
+    findSampleFile("left", leftFile);
+    if (leftFile.isOpen()) {
+      auto s = leftFile.fileSize();
+      s = min(s, 8000); // FIXME: remove this!!!
+      if (s > storageLeft) {
+        errorMsg("left file too big");
+        return false;
+      }
+
+      auto t = leftFile.read(buf, s);
+      if (t != s) {
+        errorMsg("problem reading left sample file");
+        return false;
+      }
+      sf.leftSize = s;
+      sf.leftData = buf;
+      buf += s;
+      storageLeft -= s;
+
+      leftFile.close();
+    }
+
+    FatFile rightFile;
+    findSampleFile("right", rightFile);
+    if (rightFile.isOpen()) {
+      auto s = rightFile.fileSize();
+      s = min(s, 8000); // FIXME: remove this!!!
+      if (s > storageLeft) {
+        errorMsg("right file too big");
+        return false;
+      }
+
+      auto t = rightFile.read(buf, s);
+      if (t != s) {
+        errorMsg("problem reading right sample file");
+        return false;
+      }
+      sf.rightSize = s;
+      sf.rightData = buf;
+
+      rightFile.close();
+    }
+
+    return true;
   }
 
-  uint32_t sampleFileLoad(const char* prefix, uint32_t offset,
-    void* buf, size_t bufSize)
-  {
-    FatFile sampleFile;
-    findSampleFile(prefix, sampleFile);
-    if (!sampleFile.isOpen()) return 0;
-
-    sampleFile.seekSet(offset);
-    uint32_t s = sampleFile.read(buf, bufSize);
-    sampleFile.close();
-    return s;
+  void showMessages() {
+    showMsg();
   }
 }
 

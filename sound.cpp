@@ -42,40 +42,10 @@ void TriangleToneSource::supply(sample_t* buffer, int count) {
   }
 }
 
-Samples::Samples() : sampleCount(0) { }
-
-void Samples::load(const char* prefix) {
-  auto fileSize = FileManager::sampleFileSize(prefix);
-  if (fileSize == 0) {
-    sampleCount = 0;
-    return;
-  }
-
-  sampleCount = min(fileSize, sizeof(samples)) / sizeof(samples[0]);
-  Serial.printf("will try to read %d samples\n", sampleCount);
-
-  auto readSize = FileManager::sampleFileLoad(prefix, 0,
-    samples, sampleCount * sizeof(samples[0]));
-
-  sampleCount = readSize / sizeof(samples[0]);
-
-#if BYTE_ORDER != LITTLE_ENDIAN
-#error Need to write code to swap little endian samples to bigendian
-#endif
-
-  Serial.printf("did read %d samples\n", sampleCount);
-}
-
-
 
 SampleSource::SampleSource()
   : nextSample(samples.length())
   { }
-
-void SampleSource::load(const char* prefix) {
-  samples.load(prefix);
-  nextSample = samples.length();
-}
 
 void SampleSource::play(float ampf) {
   amp = ampf;
@@ -99,11 +69,6 @@ void SampleSource::supply(sample_t* buffer, int count) {
 SampleGateSource::SampleGateSource()
   : nextSample(0), amp(0), ampTarget(0)
   { }
-
-void SampleGateSource::load(const char* prefix) {
-  samples.load(prefix);
-  nextSample = 0;
-}
 
 void SampleGateSource::supply(sample_t* buffer, int count) {
   if (samples.length() < 1) {

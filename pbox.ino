@@ -87,7 +87,8 @@ void setup() {
 
   CircuitPlayground.strip.setBrightness(5);
 
-  bool fmSetup = FileManager::setup();
+  FileManager::SampleFiles sf;
+  bool fmSetup = FileManager::locateFiles(sf);
 
   Serial.begin(115200);
   waitForSerial();
@@ -96,11 +97,15 @@ void setup() {
   Serial.println();
   Serial.flush();
 
-  if (fmSetup)
+  if (fmSetup) {
     Serial.println("FileManager is setup and happy!");
-  // samp.load("right");
-  gate1.load("left");
-  gate2.load("right");
+    gate1.load(Samples(sf.leftData, sf.leftSize));
+    gate2.load(Samples(sf.rightData, sf.rightSize));
+  }
+  else {
+    Serial.println("FileManager is unhappy!");
+    FileManager::showMessages();
+  }
 
   auto now = millis();
 
@@ -120,8 +125,6 @@ int readingsNext = 0;
 
 
 void loop() {
-  FileManager::loop();
-
   auto now = millis();
 
   if (CircuitPlayground.leftButton()) {
