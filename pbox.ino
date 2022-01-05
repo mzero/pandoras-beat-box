@@ -6,14 +6,17 @@
 #include "touch.h"
 #include "types.h"
 
+const char* fileSuffix = "24k8.raw";
+const int file_sample_rate = 24000;
 
 TouchPad tp1 = TouchPad(A1);
 TouchPad tp2 = TouchPad(A2);
 
 // TriangleToneSource tri;
 // SampleSource samp;
-SampleGateSource<12000> gate1;
-SampleGateSource<12000> gate2;
+
+SampleGateSource<file_sample_rate> gate1;
+SampleGateSource<file_sample_rate> gate2;
 MixSource mix(gate1, gate2);
 FilterSource filt(mix);
 
@@ -102,7 +105,7 @@ void setup() {
 
   if (fmSetup) {
     FileManager::SampleFiles sf;
-    if (FileManager::locateFiles(sf)) {
+    if (FileManager::locateFiles(sf, fileSuffix)) {
     gate1.load(Samples(sf.leftData, sf.leftSize));
     gate2.load(Samples(sf.rightData, sf.rightSize));
   }

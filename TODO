@@ -1,6 +1,6 @@
 # TODO
 
-[ ] switch to 24kHz, 8bit samples
+[x] switch to 24kHz, 8bit samples
 [ ] optimize just the DAC buffer filling functions (?)
 
 [x] on box tilt in X - adjust sample start ahead or behind
@@ -9,7 +9,9 @@
 
 [ ] Filter tilt needs tuning once in box
 [ ] Position tilt needs tuning once in box
-  [ ] minimal length should be picked and computed from sample rate
+  [x] minimal length should be picked and computed from sample rate
+
+[ ] how much code is FS init taking up?
 
 [ ] HW: go back to 1M touch resistors
 

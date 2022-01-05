@@ -14,7 +14,7 @@ namespace FileManager {
   };
 
   bool setupFileSystem();
-  bool locateFiles(SampleFiles&);
+  bool locateFiles(SampleFiles&, const char* suffix);
   void showMessages();
 }
 

@@ -276,7 +276,9 @@ namespace FileManager {
 namespace {
 /* -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- */
 
-  bool matchSampleFileName(const char* prefix, FatFile& file) {
+  bool matchSampleFileName(
+    const char* prefix, const char* suffix, FatFile& file)
+  {
     char name[512];
     file.getName(name, sizeof(name));
 
@@ -285,10 +287,12 @@ namespace {
 
     return
       nameStr.startsWith(prefix)
-      && nameStr.endsWith(".raw");
+      && nameStr.endsWith(suffix);
   }
 
-  void findSampleFile(const char* prefix, FatFile& sampleFile) {
+  void findSampleFile(
+    const char* prefix, const char* suffix, FatFile& sampleFile)
+  {
     sampleFile.close();
 
     FatFile root;
@@ -299,7 +303,7 @@ namespace {
 
     FatFile file;
     while (file.openNext(&root, O_RDONLY)) {
-      if (matchSampleFileName(prefix, file)) {
+      if (matchSampleFileName(prefix, suffix, file)) {
         if (!sampleFile.isOpen()) {
           sampleFile = file;
         } else {
@@ -336,10 +340,10 @@ namespace {
     FlashedFileInfo rightFile;
   };
 
-  bool checkFile(const char* prefix,
+  bool checkFile(const char* prefix, const char* suffix,
     FatFile& file, bool& flash, FlashedFileInfo& info) {
 
-    findSampleFile(prefix, file);
+    findSampleFile(prefix, suffix, file);
     if (!file.isOpen()) {
       statusMsgf("no %s file found", prefix);
       // no left file found -- okay
@@ -409,7 +413,7 @@ namespace {
 
 namespace FileManager {
 
-  bool locateFiles(SampleFiles& sf) {
+  bool locateFiles(SampleFiles& sf, const char* suffix) {
     void* dataBegin = NvmManager::dataBegin();
     void* fileBegin = blockAfter(dataBegin, sizeof(FlashedDir));
     void* dataEnd = NvmManager::dataEnd();
@@ -433,8 +437,10 @@ namespace FileManager {
 
     FatFile leftFile;
     FatFile rightFile;
-    if (!checkFile("left",  leftFile,  flashLeft,  fd.leftFile))  return false;
-    if (!checkFile("right", rightFile, flashRight, fd.rightFile)) return false;
+    if (!checkFile("left",  suffix, leftFile,  flashLeft,  fd.leftFile))
+      return false;
+    if (!checkFile("right", suffix, rightFile, flashRight, fd.rightFile))
+      return false;
 
     if (blockAfter(blockAfter(fileBegin, fd.leftFile.size), fd.rightFile.size) >= dataEnd) {
       errorMsg("left and right files are too large to flash");

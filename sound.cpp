@@ -110,13 +110,44 @@ SampleGateSourceBase::SampleGateSourceBase()
 
 void SampleGateSourceBase::setPosition(float p) {
   int l = samples.length();
-  if (l < 6000) return;
+  if (l < sampleRate() / 2) return;
 
   startSample = int(float(l)*p) % l;
 }
 
-// TODO: Write the SAMPLE_RATE & SAMPLE_RATE/2
-// versions of SampleGateSource::supply()
+// TODO: Write the SAMPLE_RATE version of SampleGateSource::supply()
+
+template<>
+void SampleGateSource<int(SAMPLE_RATE/2)>::supply(sample_t* buffer, int count) {
+  if (samples.length() < 1) {
+    while (count--) {
+      *buffer++ = SAMPLE_ZERO;
+    }
+    return;
+  }
+
+  while (count) {
+    SFixed<15, 16> v(samples[nextSample++]);
+    if (nextSample >= samples.length()) nextSample = 0;
+
+    SFixed<15, 16> w(samples[nextSample]);
+    SFixed<15, 16> a(amp);
+    a /= 2;
+
+    *buffer++ = sample_t((v + v) * a);
+    *buffer++ = sample_t((v + w) * a);
+    count -= 2;
+
+    /*
+      slew = 1 - nth root (1 - 1/1db))
+    */
+    constexpr amp_t slewUp(0.074146f);     // 1.2ms
+    constexpr amp_t slewDown(0.001087f);   // 85ms
+
+    if (amp < ampTarget)      amp += (ampTarget - amp) * slewUp;
+    else                      amp -= (amp - ampTarget) * slewDown;
+  }
+}
 
 template<>
 void SampleGateSource<int(SAMPLE_RATE/4)>::supply(sample_t* buffer, int count) {
@@ -127,7 +158,7 @@ void SampleGateSource<int(SAMPLE_RATE/4)>::supply(sample_t* buffer, int count) {
     return;
   }
 
-  while (count--) {
+  while (count) {
     SFixed<15, 16> v(samples[nextSample++]);
     if (nextSample >= samples.length()) nextSample = 0;
 
@@ -139,7 +170,7 @@ void SampleGateSource<int(SAMPLE_RATE/4)>::supply(sample_t* buffer, int count) {
     *buffer++ = sample_t((v + v + v + w) * a);
     *buffer++ = sample_t((v + v + w + w) * a);
     *buffer++ = sample_t((v + w + w + w) * a);
-    count -= 3;
+    count -= 4;
 
     /*
       slew = 1 - nth root (1 - 1/1db))

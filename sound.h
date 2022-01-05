@@ -88,6 +88,8 @@ public:
   void setPosition(float);
 
 protected:
+  virtual int sampleRate() const = 0;
+
   Samples samples;
   int startSample;
   int nextSample;
@@ -103,6 +105,8 @@ class SampleGateSource : public SampleGateSourceBase {
 public:
   SampleGateSource() { }
   virtual void supply(sample_t* buffer, int count);
+protected:
+  virtual int sampleRate() const { return sample_rate; }
 };
 
 
