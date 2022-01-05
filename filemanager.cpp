@@ -362,8 +362,8 @@ namespace {
       prefix, s, d.lastWriteDate, d.lastWriteTime);
 
     if (s == info.size
-    || d.lastWriteTime == info.modTime
-    || d.lastWriteDate == info.modDate) {
+    && d.lastWriteTime == info.modTime
+    && d.lastWriteDate == info.modDate) {
       return true;
     }
 
