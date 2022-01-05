@@ -12,8 +12,8 @@ TouchPad tp2 = TouchPad(A2);
 
 // TriangleToneSource tri;
 // SampleSource samp;
-SampleGateSource gate1;
-SampleGateSource gate2;
+SampleGateSource<12000> gate1;
+SampleGateSource<12000> gate2;
 MixSource mix(gate1, gate2);
 FilterSource filt(mix);
 

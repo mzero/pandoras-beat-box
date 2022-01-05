@@ -43,41 +43,83 @@ void TriangleToneSource::supply(sample_t* buffer, int count) {
 }
 
 
-SampleSource::SampleSource()
+SampleSourceBase::SampleSourceBase()
   : nextSample(samples.length())
   { }
 
-void SampleSource::play(float ampf) {
+void SampleSourceBase::load(const Samples& s) {
+  samples = s;
+  nextSample = samples.length();
+}
+
+void SampleSourceBase::play(float ampf) {
   amp = ampf;
-  decay = 0.9994f; // FIXME: Figure this out!
   nextSample = 0;
 }
 
-void SampleSource::supply(sample_t* buffer, int count) {
+template<>
+void SampleSource<int(SAMPLE_RATE)>::supply(sample_t* buffer, int count) {
   while (nextSample < samples.length() && count) {
     count -= 1;
-    *buffer++ = sample_t(samples[nextSample++]);
-
-    amp *= decay;
+    *buffer++ = sample_t(samples[nextSample++]*amp);
   }
   while (count--) {
     *buffer++ = SAMPLE_ZERO;
   }
 }
 
+template<>
+void SampleSource<int(SAMPLE_RATE/2)>::supply(sample_t* buffer, int count) {
+  comp_t a = amp/2;
 
-SampleGateSource::SampleGateSource()
+  while (nextSample < samples.length() && count) {
+    count -= 2;
+    comp_t v = comp_t(samples[nextSample++]);
+    comp_t w = nextSample < samples.length() ? comp_t(samples[nextSample]) : v;
+
+    *buffer++ = sample_t((v + v) * a);
+    *buffer++ = sample_t((v + w) * a);
+  }
+  while (count--) {
+    *buffer++ = SAMPLE_ZERO;
+  }
+}
+
+template<>
+void SampleSource<int(SAMPLE_RATE/4)>::supply(sample_t* buffer, int count) {
+  comp_t a = amp/4;
+
+  while (nextSample < samples.length() && count) {
+    count -= 4;
+    comp_t v = comp_t(samples[nextSample++]);
+    comp_t w = nextSample < samples.length() ? comp_t(samples[nextSample]) : v;
+
+    *buffer++ = sample_t((v + v + v + v) * a);
+    *buffer++ = sample_t((v + v + v + w) * a);
+    *buffer++ = sample_t((v + v + w + w) * a);
+    *buffer++ = sample_t((v + w + w + w) * a);
+  }
+  while (count--) {
+    *buffer++ = SAMPLE_ZERO;
+  }
+}
+
+SampleGateSourceBase::SampleGateSourceBase()
   : startSample(0), nextSample(0), amp(0), ampTarget(0)
   { }
 
-void SampleGateSource::setPosition(float p) {
+void SampleGateSourceBase::setPosition(float p) {
   int l = samples.length();
   if (l < 6000) return;
 
   startSample = int(float(l)*p) % l;
 }
 
-void SampleGateSource::supply(sample_t* buffer, int count) {
+// TODO: Write the SAMPLE_RATE & SAMPLE_RATE/2
+// versions of SampleGateSource::supply()
+
+template<>
+void SampleGateSource<int(SAMPLE_RATE/4)>::supply(sample_t* buffer, int count) {
   if (samples.length() < 1) {
     while (count--) {
       *buffer++ = SAMPLE_ZERO;

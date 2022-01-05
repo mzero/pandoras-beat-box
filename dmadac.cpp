@@ -48,6 +48,9 @@ namespace {
   Adafruit_ZeroDMA dma;
 
   const int buffer_count = 96;
+  static_assert(buffer_count % 4 == 0);
+    // must be a multiple of 4 for the 1/4 SR sample based sources to work
+
   sample_t buffer_a[buffer_count];
   sample_t buffer_b[buffer_count];
   bool transferring_buffer_a;

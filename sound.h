@@ -54,25 +54,32 @@ private:
 
 };
 
-class SampleSource : public SoundSource {
+class SampleSourceBase : public SoundSource {
 public:
-  SampleSource();
-  void load(const Samples& s) { samples = s; }
+  SampleSourceBase();
+  void load(const Samples& s);
   void play(float amp);
 
-  virtual void supply(sample_t* buffer, int count);
-
-private:
+protected:
   Samples samples;
-
   int nextSample;
-  UFixed<0, 32> amp;
-  UFixed<0, 32> decay;
+
+  using comp_t = SFixed<15, 16>;
+  comp_t amp;
 };
 
-class SampleGateSource : public SoundSource {
+template<int sample_rate>
+class SampleSource : public SampleSourceBase {
 public:
-  SampleGateSource();
+  SampleSource() { }
+  virtual void supply(sample_t* buffer, int count);
+};
+
+
+
+class SampleGateSourceBase : public SoundSource {
+public:
+  SampleGateSourceBase();
   void load(const Samples& s) { samples = s; }
 
   template<typename T>
@@ -80,9 +87,7 @@ public:
 
   void setPosition(float);
 
-  virtual void supply(sample_t* buffer, int count);
-
-private:
+protected:
   Samples samples;
   int startSample;
   int nextSample;
@@ -93,9 +98,17 @@ private:
   amp_t ampTarget;
 };
 
+template<int sample_rate>
+class SampleGateSource : public SampleGateSourceBase {
+public:
+  SampleGateSource() { }
+  virtual void supply(sample_t* buffer, int count);
+};
+
+
 
 template<typename T>
-void SampleGateSource::gate(T cv, T rangeMin, T rangeMax, T threshold) {
+void SampleGateSourceBase::gate(T cv, T rangeMin, T rangeMax, T threshold) {
   if (cv < threshold) {
     ampTarget = amp_t(0);
     return;
