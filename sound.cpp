@@ -67,8 +67,15 @@ void SampleSource::supply(sample_t* buffer, int count) {
 
 
 SampleGateSource::SampleGateSource()
-  : nextSample(0), amp(0), ampTarget(0)
+  : startSample(0), nextSample(0), amp(0), ampTarget(0)
   { }
+
+void SampleGateSource::setPosition(float p) {
+  int l = samples.length();
+  if (l < 6000) return;
+
+  startSample = int(float(l)*p) % l;
+}
 
 void SampleGateSource::supply(sample_t* buffer, int count) {
   if (samples.length() < 1) {

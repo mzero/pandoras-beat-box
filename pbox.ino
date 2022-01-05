@@ -152,6 +152,11 @@ void loop() {
     auto y = CircuitPlayground.motionY();
     float f = 2000.0f * expf((y+4.5f)/3.0f);
     filt.setFreqAndQ(f, 0.2);
+
+    auto x = CircuitPlayground.motionX();
+    float g = min(max(0.0f, x * (0.5f / -6.0f) + 0.5f), 1.0f);
+    gate1.setPosition(g);
+    gate2.setPosition(g);
   }
 
   static millis_t neopix_update = 0;

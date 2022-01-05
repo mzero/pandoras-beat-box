@@ -3,11 +3,13 @@
 [ ] switch to 24kHz, 8bit samples
 [ ] optimize just the DAC buffer filling functions (?)
 
-[ ] on box tilt in X - adjust sample start ahead or behind
+[x] on box tilt in X - adjust sample start ahead or behind
   - only for samples longer than x ms.
 
 
 [ ] Filter tilt needs tuning once in box
+[ ] Position tilt needs tuning once in box
+  [ ] minimal length should be picked and computed from sample rate
 
 [ ] HW: go back to 1M touch resistors
 

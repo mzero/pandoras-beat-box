@@ -78,11 +78,13 @@ public:
   template<typename T>
   void gate(T cv, T rangeMin, T rangeMax, T threshold);
 
+  void setPosition(float);
+
   virtual void supply(sample_t* buffer, int count);
 
 private:
   Samples samples;
-
+  int startSample;
   int nextSample;
 
   using amp_t = UFixed<0, 32>;
@@ -98,7 +100,7 @@ void SampleGateSource::gate(T cv, T rangeMin, T rangeMax, T threshold) {
     ampTarget = amp_t(0);
     return;
   }
-  if (ampTarget == amp_t(0)) nextSample = 0;
+  if (ampTarget == amp_t(0)) nextSample = startSample;
 
   if (cv < rangeMin) cv = rangeMin;
   if (cv > rangeMax) cv = rangeMax;
