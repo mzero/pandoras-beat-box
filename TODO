@@ -1,24 +1,23 @@
 # TODO
 
-[ ] sum without stack buffer (?)
-  - need to pre-zero buffer and manage ranges
+[ ] switch to 24kHz, 8bit samples
+[ ] optimize just the DAC buffer filling functions (?)
 
-[ ] read accel every <m> ms (less often than cap)
 [ ] on box tilt in X - adjust sample start ahead or behind
+  - only for samples longer than x ms.
 
-[x] LPF filter output
-[x] on box tilt in Y - adjust center frequency
 
 [ ] Filter tilt needs tuning once in box
 
 [ ] HW: go back to 1M touch resistors
 
-[ ] DMA and SPI issue?
-
 
 ## Later
 
 [ ] why is 12kHz sampling actually 13.7kHz?
+
+[?] sum without stack buffer (?)
+  - need to pre-zero buffer and manage ranges
 
 [ ] grainer
   [ ] start on trigger
@@ -28,6 +27,7 @@
 [ ] cycle
 [ ] grain
 
+[ ] DMA and FatFile issue?
 
 
 [] on open lid, invert env.
