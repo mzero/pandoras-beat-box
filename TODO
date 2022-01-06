@@ -1,7 +1,9 @@
 # TODO
 
 [x] switch to 24kHz, 8bit samples
-[ ] optimize just the DAC buffer filling functions (?)
+[x] optimize just the DAC buffer filling functions (?)
+  - best results for program setting is with -O2 by far
+  - annotating individual functions only makes it *slower*
 
 [x] on box tilt in X - adjust sample start ahead or behind
   - only for samples longer than x ms.
@@ -15,6 +17,8 @@
 
 [ ] HW: go back to 1M touch resistors
 
+[ ] on board speaker toggle
+  [ ] start with off? or on? depends on how loud it is in the box....
 
 ## Later
 

@@ -55,7 +55,7 @@ namespace {
   sample_t buffer_b[buffer_count];
   bool transferring_buffer_a;
 
-  void fillBuffer(sample_t* b) {
+  inline void fillBuffer(sample_t* b) {
     dmaSource->supply(b, buffer_count);
   }
 

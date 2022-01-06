@@ -1,3 +1,6 @@
+// NB: For best timinigs, compile whole program with -O2
+//    Annotating individual functions with -O3 or higher, makes them slower!
+
 #include <Adafruit_CircuitPlayground.h>
 
 #include "dmadac.h"
