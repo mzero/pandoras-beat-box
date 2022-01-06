@@ -442,8 +442,12 @@ namespace FileManager {
     if (!checkFile("right", suffix, rightFile, flashRight, fd.rightFile))
       return false;
 
-    if (blockAfter(blockAfter(fileBegin, fd.leftFile.size), fd.rightFile.size) >= dataEnd) {
-      errorMsg("left and right files are too large to flash");
+    void* leftEndrightStart = blockAfter(fileBegin, fd.leftFile.size);
+    void* rightEnd = blockAfter(leftEndrightStart, fd.rightFile.size);
+    if (rightEnd >= dataEnd) {
+      errorMsgf("left and right files are too large to flash: %dk > %dk",
+        ((uint32_t)rightEnd - (uint32_t)fileBegin)/1024,
+        ((uint32_t)dataEnd - (uint32_t)fileBegin)/1024);
       return false;
     }
 

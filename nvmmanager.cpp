@@ -1,10 +1,23 @@
 #include "nvmmanager.h"
 
+extern uint32_t __etext;
+
 namespace NvmManager {
 
   void* dataBegin() {
-    constexpr size_t program_size = 120 * 1024;
-    return (void*)(FLASH_ADDR + program_size);
+    const uint32_t program_end = (uint32_t)&__etext;
+    const size_t program_size = 120 * 1024;
+    uint32_t begin = FLASH_ADDR + program_size;
+
+    if (begin < program_end) {
+      begin = (program_end + 1023) & ~1023;
+
+      Serial.printf("Program is larger than expected: %08x\n", program_end);
+      Serial.printf("Adjusting file storage area to:  %08x (%dk)\n",
+        begin, ((uint32_t)dataEnd() - begin + 1023)/1024);
+    }
+
+    return (void *)begin;
   }
 
   void* dataEnd() {
