@@ -1,47 +1,31 @@
 # TODO
 
-[x] switch to 24kHz, 8bit samples
-[x] optimize just the DAC buffer filling functions (?)
-  - best results for program setting is with -O2 by far
-  - annotating individual functions only makes it *slower*
+[ ] Tuning, once built in box:
+  [ ] Filter tilt
+  [ ] Position tilt
+  [ ] Touch scaling to amplitude
 
-[x] on box tilt in X - adjust sample start ahead or behind
-  - only for samples longer than x ms.
-
-
-[ ] Filter tilt needs tuning once in box
-[ ] Position tilt needs tuning once in box
-  [x] minimal length should be picked and computed from sample rate
-
-[ ] how much code is FS init taking up?
+[x] how much code is FS init taking up?
+  about 7k
 
 [ ] HW: go back to 1M touch resistors
+[ ] HW: revisit opAmp gain - maybe more?
 
 [ ] on board speaker toggle
   [ ] start with off? or on? depends on how loud it is in the box....
 
+
 ## Later
-
-[ ] why is 12kHz sampling actually 13.7kHz?
-
-[?] sum without stack buffer (?)
-  - need to pre-zero buffer and manage ranges
-
-[ ] grainer
-  [ ] start on trigger
-  [ ] loop sample from start to end
-  [ ] map touch to volume, slew volume, fast up, slow down
-
-[ ] cycle
-[ ] grain
-
-[ ] DMA and FatFile issue?
-
 
 [] on open lid, invert env.
 
-
 [] Lightshow of some sort?
+
+
+## Future
+
+[ ] why is 12kHz sampling actually 13.7kHz?
+[ ] DMA and FatFile issue?
 
 
 
