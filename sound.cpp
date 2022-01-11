@@ -208,11 +208,18 @@ FilterSource::FilterSource(SoundSource& _in)
 
 void FilterSource::setFreqAndQ(float freq, float q)
 {
-  if (freq > 12000.0f) freq = 12000.0f;
-  if (freq < 20.0f) freq = 20.0f;
-  float fsr = freq/SAMPLE_RATE;
-  f = fsr;
-  fb = q + q/(1.0 - fsr);
+  constexpr float c = PI / SAMPLE_RATE;
+  constexpr bool accurate = true;
+
+  if (accurate)
+    f = 2.0f * sinf(c * freq);
+  else {
+    constexpr float d = 2.0f * c;
+    f = d * freq;
+    if (f > 2.0f) f = 2.0f;
+  }
+
+  fb = q + q/(1.0 - f);
 }
 
 void FilterSource::supply(sample_t* buffer, int count) {

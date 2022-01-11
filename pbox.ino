@@ -153,11 +153,16 @@ void loop() {
 
   static millis_t accel_update = 0;
   if (now >= accel_update) {
-    accel_update = now + 250;
+    accel_update = now + 100;
 
     auto y = CircuitPlayground.motionY();
-    float f = 2000.0f * expf((y+4.5f)/3.0f);
-    filt.setFreqAndQ(f, 0.2);
+    float f = 20.0f * expf((y+7.0f)*(6.0f/10.0f));
+      // Maps -7 to 3 accel into 0 to 6.
+      // Then e^(0~6) gives about 8.5 octaves range,
+      // covering 20Hz to 8,069Hz, more than the full range of a piano.
+      // Note that accel ranges about ±9, but the filter code will
+      // correctly bound the range possible with the filter.
+    filt.setFreqAndQ(f, 0.6);
 
     auto x = CircuitPlayground.motionX();
     float g = min(max(0.0f, x * (0.5f / -6.0f) + 0.5f), 1.0f);
