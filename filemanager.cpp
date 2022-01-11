@@ -317,10 +317,6 @@ namespace {
       errorMsg("root openNext failed");
     }
     root.close();
-
-    if (!sampleFile.isOpen()) {
-      errorMsgf("no %s*.raw file found", prefix);
-    }
   }
 
 
@@ -350,8 +346,8 @@ namespace {
       if (info.size > 0) {
         info.size = 0;
         flash = true;
-        return true;
       }
+      return true;
     }
 
     size_t s = file.fileSize();
