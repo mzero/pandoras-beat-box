@@ -78,6 +78,64 @@ void displayCalibration(millis_t now) {
     CircuitPlayground.strip.setPixelColor(i, i <= v ? c_high : c_off);
 }
 
+
+bool sweepLoop(millis_t now) {
+  static bool sweepingStarted = false;
+  bool sweeping = CircuitPlayground.rightButton();
+
+  if (sweeping) {
+    static millis_t update = 0;
+    if (now >= update) {
+      update = now + 100;
+
+      const float cfMin = 0.0f;
+      const float cfMax = 5.0f;
+      const float cfInc = 0.0625f;
+
+      const float qMin = 0.1f;
+      const float qMax = 0.9f;
+      const float qInc = 0.2f;
+
+      static float cf = cfMin;
+      static float q = qMin;
+
+      if (!sweepingStarted) {
+        sweepingStarted = true;
+        cf = cfMin;
+        q = qMin;
+
+        Serial.println("sweeping filter over left sound");
+        Serial.print("q = ");
+        Serial.println(q);
+        Serial.flush();
+      }
+
+      filt.setFreqAndQ(55.0f*expf(cf), q);
+      gate1.gate(100, 0, 100, 10);
+
+      cf += cfInc;
+      if (cf > cfMax) {
+        cf = cfMin;
+
+        q += qInc;
+        if (q > qMax) {
+          q = qMin;
+        }
+
+        Serial.print("q = ");
+        Serial.println(q);
+        Serial.flush();
+      }
+    }
+  }
+  else
+    sweepingStarted = false;
+
+  return sweeping;
+}
+
+
+
 extern "C" char* sbrk(int incr);
 
 uint32_t sramUsed() {
@@ -141,6 +199,8 @@ void loop() {
 
   tp1.loop(now);
   tp2.loop(now);
+
+  // if (sweepLoop(now)) return;
 
   if (tp1.calibrated()) {
     gate1.gate(tp1.max(),
