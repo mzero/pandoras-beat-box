@@ -215,7 +215,13 @@ void loop() {
   if (now >= accel_update) {
     accel_update = now + 100;
 
-    auto y = CircuitPlayground.motionY();
+    float y = CircuitPlayground.motionY();
+
+    static float last_y = 0.0f;
+    y = (last_y + last_y + y) / 3;
+      // filter y a bit as accell can be jump with quick user motions
+    last_y = y;
+
     float f = 20.0f * expf((y+7.0f)*(6.0f/10.0f));
       // Maps -7 to 3 accel into 0 to 6.
       // Then e^(0~6) gives about 8.5 octaves range,

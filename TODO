@@ -5,11 +5,19 @@
   [ ] Position tilt
   [ ] Touch scaling to amplitude
 
+[ ] Filter and open/close
+  [x] limit upper edge of filter (perhaps drop Q?) so no overflow
+  [ ] reduce top gain on samples?
+  [ ] when lid is 45° need to swap to Z not X (and now signal open)
+
 [x] how much code is FS init taking up?
   about 7k
 
-[ ] HW: go back to 1M touch resistors
-[ ] HW: revisit opAmp gain - maybe more?
+HW:
+[x] go back to 1M touch resistors
+[ ] revisit opAmp gain - maybe more?
+[x] check wiring from LiPo port on CPE+
+[~] work out wiring harnesses
 
 [ ] on board speaker toggle
   [ ] start with off? or on? depends on how loud it is in the box....
