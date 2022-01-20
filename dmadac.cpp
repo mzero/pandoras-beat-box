@@ -18,7 +18,8 @@ namespace {
   class TestRampSource : public SoundSource {
   public:
     virtual void supply(sample_t* buffer, int count) {
-      sample_t bump = SAMPLE_UNIT / count;
+      using calc_t = SFixed<18,13>;
+      sample_t bump(calc_t(SAMPLE_UNIT) / calc_t(count));
       sample_t s = SAMPLE_ZERO;
       if (even) for (; count--; s += bump) *buffer++ = s;
       else      for (; count--; s -= bump) *buffer++ = s;
@@ -32,6 +33,7 @@ namespace {
 }
 
 SoundSource& zeroSource = _zeroSource;
+SoundSource& testRampSource = _testRampSource;
 
 namespace {
 

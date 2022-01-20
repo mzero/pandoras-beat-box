@@ -15,9 +15,6 @@ const int file_sample_rate = 24000;
 TouchPad tp1 = TouchPad(A1);
 TouchPad tp2 = TouchPad(A2);
 
-// TriangleToneSource tri;
-// SampleSource samp;
-
 SampleGateSource<file_sample_rate> gate1;
 SampleGateSource<file_sample_rate> gate2;
 MixSource mix(gate1, gate2);
@@ -134,6 +131,17 @@ bool sweepLoop(millis_t now) {
   return sweeping;
 }
 
+bool testToneLoop(millis_t now) {
+  static bool playingTestTone = false;
+  bool playTestTone = CircuitPlayground.rightButton();
+
+  if (playingTestTone != playTestTone) {
+    DmaDac::setSource(playTestTone ? testRampSource : filt);
+    playingTestTone = playTestTone;
+  }
+
+  return playingTestTone;
+}
 
 
 extern "C" char* sbrk(int incr);
@@ -201,6 +209,7 @@ void loop() {
   tp2.loop(now);
 
   // if (sweepLoop(now)) return;
+  if (testToneLoop(now)) return;
 
   if (tp1.calibrated()) {
     gate1.gate(tp1.max(),

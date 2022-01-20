@@ -6,6 +6,7 @@
 #include "sound.h"
 
 extern SoundSource& zeroSource;
+extern SoundSource& testRampSource;
 
 namespace DmaDac {
   void begin();
