@@ -147,7 +147,6 @@ class FilterSource : public SoundSource {
 public:
   FilterSource(SoundSource& in);
   void setFreqAndQ(float freq, float q);
-  void retune(float freqFactor);
 
   virtual void supply(sample_t* buffer, int count);
 
