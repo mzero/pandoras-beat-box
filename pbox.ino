@@ -5,6 +5,7 @@
 
 #include "dmadac.h"
 #include "filemanager.h"
+#include "msg.h"
 #include "sound.h"
 #include "touch.h"
 #include "types.h"
@@ -158,19 +159,22 @@ void setup() {
   CircuitPlayground.begin();
   CircuitPlayground.strip.setBrightness(5);
 
-  bool fmSetup = FileManager::setupFileSystem();
+  bool fmSetup = false;
+  {
+    MessageHold msgHold;
 
-  Serial.begin(115200);
-  waitForSerial();
-  Serial.println();
-  Serial.println("> : ~ : .. : Pandora's Drumming Box : .. : ~ : <");
-  Serial.println();
-  Serial.flush();
+    fmSetup = FileManager::setupFileSystem();
+    Serial.begin(115200);
+    waitForSerial();
+    Serial.println();
+    Serial.println("> : ~ : .. : Pandora's Drumming Box : .. : ~ : <");
+    Serial.println();
+    Serial.flush();
+  }
 
   if (fmSetup) {
     Serial.println("FileManager is setup and happy!");
   }
-  FileManager::showMessages();
 
   if (fmSetup) {
     FileManager::SampleFiles sf;

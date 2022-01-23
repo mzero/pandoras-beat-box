@@ -8,6 +8,7 @@
 #include <Adafruit_TinyUSB.h>
 #include <Adafruit_SleepyDog.h>
 
+#include "msg.h"
 #include "nvmmanager.h"
 
 namespace {
@@ -29,57 +30,6 @@ namespace {
   FatFileSystem fatfs;
   Adafruit_USBD_MSC usb_msc;
 
-
-  char msgBuf[128];
-  bool msgWaiting = false;
-  bool holdMessages = true;
-
-  void queueMsg(const char* msg) {
-    if (!holdMessages) {
-      Serial.println(msg);
-      return;
-    }
-    if (msgWaiting) return;
-    strncpy(msgBuf, msg, sizeof(msgBuf));
-    msgBuf[sizeof(msgBuf)-1] = '\0';
-    msgWaiting = true;
-  }
-
-  void showMsg() {
-    if (msgWaiting) {
-      Serial.println(msgBuf);
-      msgWaiting = false;
-    }
-    holdMessages = false;
-  }
-
-  void statusMsg(const char* msg) {
-    queueMsg(msg);
-  }
-
-  void errorMsg(const char* msg) {
-    char buf[128];
-    snprintf(buf, sizeof(buf), "** %s", msg);
-    queueMsg(buf);
-  }
-
-  void statusMsgf(const char* fmt, ... ) {
-    char buf[128];
-    va_list args;
-    va_start(args, fmt);
-    vsnprintf(buf, sizeof(buf), fmt, args);
-    va_end(args);
-    statusMsg(buf);
-  }
-
-  void errorMsgf(const char* fmt, ... ) {
-    char buf[128];
-    va_list args;
-    va_start(args, fmt);
-    vsnprintf(buf, sizeof(buf), fmt, args);
-    va_end(args);
-    errorMsg(buf);
-  }
 
 
 /* -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- */
@@ -482,10 +432,6 @@ namespace FileManager {
     sf.rightSize = fd.rightFile.size;
 
     return true;
-  }
-
-  void showMessages() {
-    showMsg();
   }
 }
 
