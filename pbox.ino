@@ -5,6 +5,7 @@
 
 #include "dmadac.h"
 #include "filemanager.h"
+#include "filesystem.h"
 #include "msg.h"
 #include "sound.h"
 #include "touch.h"
@@ -159,11 +160,11 @@ void setup() {
   CircuitPlayground.begin();
   CircuitPlayground.strip.setBrightness(5);
 
-  bool fmSetup = false;
+  bool fsSetup = false;
   {
     MessageHold msgHold;
 
-    fmSetup = FileManager::setupFileSystem();
+    fsSetup = setupFileSystem();
     Serial.begin(115200);
     waitForSerial();
     Serial.println();
@@ -172,11 +173,11 @@ void setup() {
     Serial.flush();
   }
 
-  if (fmSetup) {
-    Serial.println("FileManager is setup and happy!");
+  if (fsSetup) {
+    Serial.println("File system is setup and happy!");
   }
 
-  if (fmSetup) {
+  if (fsSetup) {
     FileManager::SampleFiles sf;
     if (FileManager::locateFiles(sf, fileSuffix)) {
     gate1.load(Samples(sf.leftData, sf.leftSize));

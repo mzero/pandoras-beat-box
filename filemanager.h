@@ -13,7 +13,6 @@ namespace FileManager {
     void *    rightData;
   };
 
-  bool setupFileSystem();
   bool locateFiles(SampleFiles&, const char* suffix);
 }
 
