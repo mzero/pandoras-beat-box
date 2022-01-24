@@ -1,7 +1,5 @@
 #include "sound.h"
 
-#include "filemanager.h"
-
 
 TriangleToneSource::TriangleToneSource()
   : theta(0), delta(0), amp(0), decay(0)

@@ -9,4 +9,14 @@ namespace NvmManager {
 
   bool dataWrite(void* dst, void* src, size_t len);
     // this will erase the data area for len, rounded up to nearest block_size
+
+
+  inline size_t blockRound(size_t x) {
+    constexpr size_t b1 = NvmManager::block_size - 1;
+    return (x + b1) & ~b1;
+  }
+
+  inline void* blockAfter(void* a, size_t x) {
+    return (void*)((uint8_t*)a + blockRound(x));
+  }
 }

@@ -4,9 +4,9 @@
 #include <Adafruit_CircuitPlayground.h>
 
 #include "dmadac.h"
-#include "filemanager.h"
 #include "filesystem.h"
 #include "msg.h"
+#include "samplefinder.h"
 #include "sound.h"
 #include "touch.h"
 #include "types.h"
@@ -177,13 +177,12 @@ void setup() {
     Serial.println("File system is setup and happy!");
   }
 
-  if (fsSetup) {
-    FileManager::SampleFiles sf;
-    if (FileManager::locateFiles(sf, fileSuffix)) {
-    gate1.load(Samples(sf.leftData, sf.leftSize));
-    gate2.load(Samples(sf.rightData, sf.rightSize));
-  }
-  }
+  // FIXME: what to do if fsSetup is false?
+  SampleFinder::setup(fileSuffix);
+
+  SampleFinder::FlashSamples fs = SampleFinder::flashSamples();
+  gate1.load(fs.left);
+  gate2.load(fs.right);
 
   auto now = millis();
 
@@ -205,57 +204,87 @@ int readingsNext = 0;
 void loop() {
   auto now = millis();
 
-  if (CircuitPlayground.leftButton()) {
-    tp1.calibrate();
-    tp1.calibrate();
-  }
-
   tp1.loop(now);
   tp2.loop(now);
 
-  // if (sweepLoop(now)) return;
-  if (testToneLoop(now)) return;
+  bool playable = true;
 
-  if (tp1.calibrated()) {
-    gate1.gate(tp1.max(),
-      TouchPad::value_t(200), TouchPad::value_t(800), tp1.threshold());
+  static bool finderMode = false;
+
+  if (CircuitPlayground.slideSwitch()) {
+    // normal mode
+    if (finderMode) {
+      SampleFinder::exit();
+      finderMode = false;
+    }
+
+    if (CircuitPlayground.leftButton()) {
+      tp1.calibrate();
+      tp1.calibrate();
+    }
+    // if (sweepLoop(now)) playable = false;
+    if (testToneLoop(now)) playable = false;
+  } else {
+    // Sample Finder Mode
+    if (!finderMode) {
+      SampleFinder::enter();
+      finderMode = true;
+    }
+
+    SampleFinder::loop(now);
+    if (SampleFinder::newFlashSamplesAvailable()) {
+      SampleFinder::FlashSamples fs = SampleFinder::flashSamples();
+      gate1.load(fs.left);
+      gate2.load(fs.right);
+    }
   }
-  if (tp2.calibrated()) {
-    gate2.gate(tp2.max(),
-      TouchPad::value_t(200), TouchPad::value_t(800), tp2.threshold());
-  }
 
-  static millis_t accel_update = 0;
-  if (now >= accel_update) {
-    accel_update = now + 100;
 
-    float y = CircuitPlayground.motionY();
+  if (playable) {
+    if (tp1.calibrated()) {
+      gate1.gate(tp1.max(),
+        TouchPad::value_t(200), TouchPad::value_t(800), tp1.threshold());
+    }
+    if (tp2.calibrated()) {
+      gate2.gate(tp2.max(),
+        TouchPad::value_t(200), TouchPad::value_t(800), tp2.threshold());
+    }
 
-    static float last_y = 0.0f;
-    y = (last_y + last_y + y) / 3;
-      // filter y a bit as accell can be jump with quick user motions
-    last_y = y;
+    static millis_t accel_update = 0;
+    if (now >= accel_update) {
+      accel_update = now + 100;
 
-    float f = 20.0f * expf((y+7.0f)*(6.0f/10.0f));
-      // Maps -7 to 3 accel into 0 to 6.
-      // Then e^(0~6) gives about 8.5 octaves range,
-      // covering 20Hz to 8,069Hz, more than the full range of a piano.
-      // Note that accel ranges about ±9, but the filter code will
-      // correctly bound the range possible with the filter.
-    filt.setFreqAndQ(f, 0.6);
+      float y = CircuitPlayground.motionY();
 
-    auto x = CircuitPlayground.motionX();
-    float g = min(max(0.0f, x * (0.5f / -6.0f) + 0.5f), 1.0f);
-    gate1.setPosition(g);
-    gate2.setPosition(g);
+      static float last_y = 0.0f;
+      y = (last_y + last_y + y) / 3;
+        // filter y a bit as accell can be jump with quick user motions
+      last_y = y;
+
+      float f = 20.0f * expf((y+7.0f)*(6.0f/10.0f));
+        // Maps -7 to 3 accel into 0 to 6.
+        // Then e^(0~6) gives about 8.5 octaves range,
+        // covering 20Hz to 8,069Hz, more than the full range of a piano.
+        // Note that accel ranges about ±9, but the filter code will
+        // correctly bound the range possible with the filter.
+      filt.setFreqAndQ(f, 0.6);
+
+      auto x = CircuitPlayground.motionX();
+      float g = min(max(0.0f, x * (0.5f / -6.0f) + 0.5f), 1.0f);
+      gate1.setPosition(g);
+      gate2.setPosition(g);
+    }
   }
 
   static millis_t neopix_update = 0;
   if (now >= neopix_update) {
     neopix_update = now + 100;
 
-    if (tp1.calibrated())   displayTouch(now);
-    else                    displayCalibration(now);
+    CircuitPlayground.strip.clear();
+
+    if (finderMode)               SampleFinder::display(now);
+    else if (tp1.calibrated())    displayTouch(now);
+    else                          displayCalibration(now);
 
     CircuitPlayground.strip.show();
   }

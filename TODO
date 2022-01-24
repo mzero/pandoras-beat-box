@@ -67,18 +67,24 @@ A single event seems induce about 185µs of stall
 
 
 
-# Sample Memory
+# New UI
 
-Totak SRAM           32768
-SRAM usage post-init 13888
+slide switch in two positions: play <-> load
 
-available SRAM       18800
+play mode
+  A button: callibrate
+  B button: test tone
 
-Let's assume 16k available for samples
-Split L/R: 8k per side
+load mode
+  lights: sound sets:
+    white - available
+    black - missing
+    red - available but too big
+    green - loaded
+    blue - will load
 
-  16-bit
-    48kHz
-    44.1kHz
+  A button: advance will load through options
+  B button: load
 
-  8-bit
+layout on disk:
+  \d[LR].*24k8\.raw
