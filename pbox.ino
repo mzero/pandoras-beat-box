@@ -21,6 +21,9 @@ SampleGateSource<file_sample_rate> gate1;
 SampleGateSource<file_sample_rate> gate2;
 MixSource mix(gate1, gate2);
 FilterSource filt(mix);
+DelaySource delayPedal(filt);
+SoundSource& chainOut = delayPedal;
+
 
 auto c_off = CircuitPlayground.strip.Color(0, 0, 0);
 auto c_low = CircuitPlayground.strip.Color(30, 30, 30);
@@ -138,7 +141,7 @@ bool testToneLoop(millis_t now) {
   bool playTestTone = CircuitPlayground.rightButton();
 
   if (playingTestTone != playTestTone) {
-    DmaDac::setSource(playTestTone ? testRampSource : filt);
+    DmaDac::setSource(playTestTone ? testRampSource : chainOut);
     playingTestTone = playTestTone;
   }
 
@@ -187,7 +190,7 @@ void setup() {
   auto now = millis();
 
   DmaDac::begin();
-  DmaDac::setSource(filt);
+  DmaDac::setSource(chainOut);
 
   tp1.begin(now);
   tp2.begin(now);
