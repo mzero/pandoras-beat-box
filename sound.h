@@ -159,3 +159,37 @@ private:
   sample_t b0;
   sample_t b1;
 };
+
+
+class DelaySource : public SoundSource {
+public:
+  DelaySource(SoundSource& in);
+  void setDelayMix(float);    // 0.0 is full dry, 1.0 is full wet
+  void setDelayMod(float);    // 1.0 is base delay length
+  void setFeedback(float);    // in range 0.0 to 1.0 (careful!)
+
+  virtual void supply(sample_t* buffer, int count);
+
+private:
+  SoundSource& in;
+
+  static constexpr float maxDelay = 0.150;
+  static constexpr int maxDelaySamples = maxDelay * SAMPLE_RATE;
+
+  static constexpr float baseDelay = 0.080;
+  static constexpr int baseDelaySamples = baseDelay * SAMPLE_RATE;
+
+  sample_t mix_dry;
+  sample_t mix_wet;
+
+  using delay_t = UFixed<24,8>;
+
+  delay_t delay;
+  delay_t delayTarget;
+
+  sample_t feedback;
+  sample_t feedbackTarget;
+
+  sample_t tank[maxDelaySamples];
+  int writeP;
+};

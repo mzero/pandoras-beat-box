@@ -1,5 +1,5 @@
 #include "sound.h"
-
+#include "types.h"
 
 TriangleToneSource::TriangleToneSource()
   : theta(0), delta(0), amp(0), decay(0)
@@ -233,5 +233,61 @@ void FilterSource::supply(sample_t* buffer, int count) {
     b1 = b1 + f * (b0 - b1);
 
     *buffer++ = b1;
+  }
+}
+
+DelaySource::DelaySource(SoundSource& _in)
+  : in(_in),
+  mix_dry(1), mix_wet(0),
+  delay(baseDelaySamples), delayTarget(delay),
+  feedback(0.35f), feedbackTarget(feedback),
+  writeP(0)
+  { }
+
+void DelaySource::setDelayMix(float m) {
+  mix_wet = clamp(sample_t(m), sample_t(0), sample_t(1));
+  mix_dry = sample_t(1) - mix_wet;
+}
+
+void DelaySource::setFeedback(float f) {
+  constexpr sample_t f_min(0.0f);
+  constexpr sample_t f_max(0.995f);
+
+  feedbackTarget = clamp(sample_t(f), f_min, f_max);
+}
+
+void DelaySource::setDelayMod(float d) {
+  constexpr delay_t d_min(1);
+  constexpr delay_t d_max(maxDelaySamples);
+  constexpr delay_t d_base(baseDelaySamples);
+
+  delayTarget = clamp(delay_t(d) * d_base, d_min, d_max);
+}
+
+void DelaySource::supply(sample_t* buffer, int count) {
+  in.supply(buffer, count);
+
+  while (count--) {
+    int di(delay);
+    int readP = writeP + di;
+    sample_t d0 = tank[readP % maxDelaySamples];
+    sample_t d1 = tank[(readP + 1) % maxDelaySamples];
+
+    sample_t in = *buffer;
+    sample_t df = sample_t(delay - delay_t(di));
+    sample_t v = d0 * (sample_t(1) - df) + d1 * df;
+    sample_t w = in + feedback * v;
+    tank[writeP] = w;
+    writeP = (writeP ? writeP : maxDelaySamples) - 1;
+    sample_t out = v - feedback * w;
+    sample_t mix = in * mix_dry + out * mix_wet;
+    *buffer++ = mix;
+
+    constexpr float slew_exp(1.0f-0.9716270f);  // -24dB in 2ms
+    constexpr delay_t d_exp(slew_exp);
+    constexpr sample_t f_exp(slew_exp);
+
+    delay += (delayTarget - delay) * d_exp;
+    feedback += (feedbackTarget - feedback) * f_exp;
   }
 }
