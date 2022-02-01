@@ -206,7 +206,7 @@ FilterSource::FilterSource(SoundSource& _in)
 
 void FilterSource::setFreqAndQ(float freq, float q)
 {
-  constexpr float freq_max = SAMPLE_RATE / 2.5f;
+  constexpr float freq_max = SAMPLE_RATE / 4.0f;
   freq = min(freq, freq_max);
 
   constexpr float c = PI / SAMPLE_RATE;
