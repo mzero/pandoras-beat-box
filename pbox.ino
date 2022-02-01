@@ -257,25 +257,32 @@ void loop() {
     if (now >= accel_update) {
       accel_update = now + 100;
 
-      float y = CircuitPlayground.motionY();
+      sensors_event_t event;
+      CircuitPlayground.lis.getEvent(&event);
 
-      static float last_y = 0.0f;
-      y = (last_y + last_y + y) / 3;
-        // filter y a bit as accell can be jump with quick user motions
-      last_y = y;
+      static float x, y, z;
+        // these are static because they are filtered versions of the event
+        // since the accellerometer values can be jumpy with quick user motions
 
-      float f = 20.0f * expf((y+7.0f)*(6.0f/10.0f));
-        // Maps -7 to 3 accel into 0 to 6.
-        // Then e^(0~6) gives about 8.5 octaves range,
-        // covering 20Hz to 8,069Hz, more than the full range of a piano.
+      x = (x + x + event.acceleration.x) / 3.0f;
+      y = (y + y + event.acceleration.y) / 3.0f;
+      z = (z + z + event.acceleration.z) / 3.0f;
+
+      float f = 30.0f * expf(map_range(y, -9.0f, 3.5f, 0.0f, 5.0f));
+        // Maps -9 to 3.5 accel into 0 to 5.
+        // Then e^(0~5) gives about 7 octaves range,
+        // covering 30Hz to 4,452Hz.
         // Note that accel ranges about ±9, but the filter code will
         // correctly bound the range possible with the filter.
-      filt.setFreqAndQ(f, 0.6);
+      filt.setFreqAndQ(f, 0.6f);
 
-      auto x = CircuitPlayground.motionX();
-      float g = min(max(0.0f, x * (0.5f / -6.0f) + 0.5f), 1.0f);
+      float g = map_range_clamped(x, -4.0f, 4.0f, 0.0f, 1.0f);
       gate1.setPosition(g);
       gate2.setPosition(g);
+
+      delayPedal.setDelayMix(map_range_clamped(z, -9.0f, 0.0f, 0.0f, 0.85f));
+      delayPedal.setDelayMod(map_range(x, -4.0f, 4.0f, 0.80f, 1.20f));
+      delayPedal.setFeedback(map_range_clamped(z, -9.0f, 0.0f, 0.5f, 0.95f));
     }
   }
 
