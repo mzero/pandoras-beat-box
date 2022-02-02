@@ -62,6 +62,7 @@ namespace {
   }
 
   volatile unsigned int dmaCount = 0;
+  volatile unsigned int dmaClipped = 0;
   volatile unsigned long dmaTime = 0;
 
   void dmaDoneCallback(Adafruit_ZeroDMA* _dma) {
@@ -84,8 +85,8 @@ namespace {
     for (int i = buffer_count; i; --i, ++buf) {
       sdac_t u(*buf);
       dac_t v;
-      if (u > SDAC_MAX)       v = DAC_POS_ONE;
-      else if (u < SDAC_MIN)  v = DAC_NEG_ONE;
+      if (u > SDAC_MAX)       { v = DAC_POS_ONE; dmaClipped++; }
+      else if (u < SDAC_MIN)  { v = DAC_NEG_ONE; dmaClipped++; }
       else
         v = dac_t((u << (DAC_BITS - 1)) + sdac_t(DAC_ZERO));
       *((dac_t*)buf) = v;
@@ -194,20 +195,28 @@ namespace DmaDac {
     unsigned long t = m - lastMicros;
     lastMicros = m;
 
-    static int lastDmaCount = 0;
-    int d = dmaCount;
-    int n = d - lastDmaCount;
-    lastDmaCount = d;
+    static unsigned int lastDmaCount = 0;
+    unsigned int currentDmaCount = dmaCount;
+    unsigned int reportDmaCount = currentDmaCount - lastDmaCount;
+    lastDmaCount = currentDmaCount;
+
+    static unsigned int lastDmaClipped = 0;
+    unsigned int currentDmaClipped = dmaClipped;
+    unsigned int reportDmaClipped = currentDmaClipped - lastDmaClipped;
+    lastDmaClipped = currentDmaClipped;
 
     static unsigned long lastDmaTime = 0;
-    unsigned long u = dmaTime;
-    unsigned long v = u - lastDmaTime;
-    lastDmaTime = u;
+    unsigned long currentDmaTime = dmaTime;
+    unsigned long reportDmaTime = currentDmaTime - lastDmaTime;
+    lastDmaTime = currentDmaTime;
 
-    float sr = float(n * buffer_count) * 1000000.0f / float(t);
+    float sr = float(reportDmaCount * buffer_count) * 1000000.0f / float(t);
 
-    out.printf("DMA to DAC: %d buffers sent in %dus, %dHz\n", n, t, int(sr));
-    out.printf("   %dµs filling buffers, %dµs/buffer\n", v, v / n);
+    out.printf("DMA to DAC: %d buffers sent in %dus, %dHz\n",
+        reportDmaCount, t, int(sr));
+    out.printf("   %dµs filling buffers, %dµs/buffer\n",
+        reportDmaTime, reportDmaTime / reportDmaCount);
+    out.printf("   %d clipped samples\n", reportDmaClipped);
 
 #if 0
     sample_t buf[buffer_count];
