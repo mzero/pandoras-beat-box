@@ -212,11 +212,11 @@ namespace DmaDac {
 
     float sr = float(reportDmaCount * buffer_count) * 1000000.0f / float(t);
 
-    out.printf("DMA to DAC: %d buffers sent in %dus, %dHz\n",
+    out.printf("DMA to DAC: %d buffers sent in %7dus, %5dHz",
         reportDmaCount, t, int(sr));
-    out.printf("   %dµs filling buffers, %dµs/buffer\n",
+    out.printf("   %6dµs filling buffers, %4dµs/buffer",
         reportDmaTime, reportDmaTime / reportDmaCount);
-    out.printf("   %d clipped samples\n", reportDmaClipped);
+    out.printf("   %3d clipped samples\n", reportDmaClipped);
 
 #if 0
     sample_t buf[buffer_count];
