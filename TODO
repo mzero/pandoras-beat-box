@@ -7,15 +7,30 @@
 
 [ ] Filter and open/close
   [x] limit upper edge of filter (perhaps drop Q?) so no overflow
-  [ ] reduce top gain on samples?
-  [ ] when lid is 45° need to swap to Z not X (and now signal open)
+  [-] NOPE: reduce top gain on samples?
+  [-] NOPE: when lid is 45° need to swap to Z not X (and now signal open)
+
+[ ] Delay
+  [x] does it need wed/dry code?
+    [x] w/o it, is there too much delay
+    [x] with it, does it no longer sound right?
+    [x] with it, do you need the all pass code or is simple delay enough?
+    - with wet/dry in, and set all wet, there seems to be no lag: still hear
+    - the dry sound first.  at half wet/dry, there is deminishing I think
+    - because of phase offset?
+    - SCRAP the allpass - straight delay line works GREAT!
+  [x] does it need the linear interp? NOPE
+  [x] does it need DC leaking code? NOPE
+  [ ] does half speed delay line work well?
+  [ ] can changing the calculation format improve anything?
+
 
 [x] how much code is FS init taking up?
   about 7k
 
 HW:
 [x] go back to 1M touch resistors
-[ ] revisit opAmp gain - maybe more?
+[-] revisit opAmp gain - maybe more?
 [x] check wiring from LiPo port on CPE+
 [~] work out wiring harnesses
 

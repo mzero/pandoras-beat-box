@@ -280,9 +280,9 @@ void loop() {
       gate1.setPosition(g);
       gate2.setPosition(g);
 
-      delayPedal.setDelayMix(map_range_clamped(z, -9.0f, 0.0f, 0.0f, 0.85f));
       delayPedal.setDelayMod(map_range(x, -4.0f, 4.0f, 0.80f, 1.20f));
-      delayPedal.setFeedback(map_range_clamped(z, -9.0f, 0.0f, 0.5f, 0.95f));
+      delayPedal.setFeedback(map_range_clamped(z, -3.0f, 0.0f, 0.0f, 0.975f));
+
     }
   }
 
