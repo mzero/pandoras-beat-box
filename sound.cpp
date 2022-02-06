@@ -137,13 +137,13 @@ void SampleGateSource<int(SAMPLE_RATE/2)>::supply(sample_t* buffer, int count) {
     count -= 2;
 
     /*
-      slew = 1 - nth root (1 - 1/1db))
+      slew = (t * SR/2) root (-20dB)
     */
-    constexpr amp_t slewUp(0.074146f);     // 1.2ms
-    constexpr amp_t slewDown(0.001087f);   // 85ms
+    constexpr amp_t slewUp(  0.92316169902);   // 1.2ms
+    constexpr amp_t slewDown(0.99887191858);   // 85ms
 
-    if (amp < ampTarget)      amp += (ampTarget - amp) * slewUp;
-    else                      amp -= (amp - ampTarget) * slewDown;
+    if (amp < ampTarget)  amp = ampTarget - (ampTarget - amp) * slewUp;
+    else                  amp = ampTarget + (amp - ampTarget) * slewDown;
   }
 }
 
@@ -171,13 +171,13 @@ void SampleGateSource<int(SAMPLE_RATE/4)>::supply(sample_t* buffer, int count) {
     count -= 4;
 
     /*
-      slew = 1 - nth root (1 - 1/1db))
+      slew = (t * SR/4) root (-20dB)
     */
-    constexpr amp_t slewUp(0.14279f);     // 1.2ms
-    constexpr amp_t slewDown(0.00217f);   // 85ms
+    constexpr amp_t slewUp(  0.85222752254f);   // 1.2ms
+    constexpr amp_t slewDown(0.99774510973f);   // 85ms
 
-    if (amp < ampTarget)      amp += (ampTarget - amp) * slewUp;
-    else                      amp -= (amp - ampTarget) * slewDown;
+    if (amp < ampTarget)  amp = ampTarget - (ampTarget - amp) * slewUp;
+    else                  amp = ampTarget + (amp - ampTarget) * slewDown;
   }
 }
 
