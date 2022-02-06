@@ -16,6 +16,7 @@ const int file_sample_rate = 24000;
 
 TouchPad tp1 = TouchPad(A1);
 TouchPad tp2 = TouchPad(A2);
+int touchedOutPin = 0; // labeled "RX A6" on the board
 
 SampleGateSource<file_sample_rate> gate1;
 SampleGateSource<file_sample_rate> gate2;
@@ -244,14 +245,18 @@ void loop() {
 
 
   if (playable) {
+    bool touched = false;
     if (tp1.calibrated()) {
+      touched = touched || tp1.max() > tp1.threshold();
       gate1.gate(tp1.max(),
         TouchPad::value_t(200), TouchPad::value_t(800), tp1.threshold());
     }
     if (tp2.calibrated()) {
+      touched = touched || tp2.max() > tp2.threshold();
       gate2.gate(tp2.max(),
         TouchPad::value_t(200), TouchPad::value_t(800), tp2.threshold());
     }
+    digitalWrite(touchedOutPin, touched);
 
     static millis_t accel_update = 0;
     if (now >= accel_update) {
