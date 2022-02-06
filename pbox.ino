@@ -297,9 +297,9 @@ void loop() {
 
     CircuitPlayground.strip.clear();
 
-    if (finderMode)               SampleFinder::display(now);
-    else if (tp1.calibrated())    displayTouch(now);
-    else                          displayCalibration(now);
+    if (!tp1.calibrated())        displayCalibration(now);
+    else if (finderMode)          SampleFinder::display(now);
+    else                          displayTouch(now);
 
     CircuitPlayground.strip.show();
   }

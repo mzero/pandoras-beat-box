@@ -7,7 +7,7 @@
     - also accounting for delay volume
   [ ] feedback at maximum open
 
-[ ] Calibration display should have top priority
+[x] Calibration display should have top priority
 
 [ ] Filter and open/close
   [x] limit upper edge of filter (perhaps drop Q?) so no overflow
@@ -31,6 +31,8 @@
   [ ] does half speed delay line work well?
   [ ] can changing the calculation format improve anything?
 
+[ ] blinking yellow for "will load" is hard to see
+[ ] finder should re-search a few MS after last change to FS
 
 [x] how much code is FS init taking up?
   about 7k
