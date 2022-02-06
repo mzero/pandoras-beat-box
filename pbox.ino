@@ -300,7 +300,6 @@ void loop() {
   }
 
 #if 0
-  if (!plot_touch) {
     static millis_t stats_update = 0;
     if (now >= stats_update) {
       stats_update = now + 1000;
@@ -308,7 +307,6 @@ void loop() {
       // Serial.print("tp2: "); tp2.printStats(Serial);
       // Serial.println("----");
       DmaDac::report(Serial);
-    }
   }
 #endif
 }

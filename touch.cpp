@@ -43,9 +43,6 @@ void TouchPad::begin(millis_t now) {
   _max = v0;
   _threshold = v0;
   _calibrated = false;
-
-  if (plot_touch)
-    Serial.print("min\tmax\tvalue\n");
 }
 
 void TouchPad::loop(millis_t now) {
@@ -74,9 +71,6 @@ void TouchPad::loop(millis_t now) {
         _max = ::max(_max, s);
       }
     }
-
-    if (plot_touch)
-      Serial.printf("%d\t%d\t%d\n", _min, _max, v);
   }
 
   if (!_calibrated && now >= _calibration_time) {

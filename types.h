@@ -4,10 +4,6 @@ using millis_t = unsigned long;
 using micros_t = unsigned long;
 
 
-const bool plot_touch = false;
-const bool plot_axis = false;
-
-
 template < typename T >
 inline T clamp(const T& x, const T& lo, const T& hi) {
   if (x < lo) return lo;
