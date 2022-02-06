@@ -193,6 +193,8 @@ void setup() {
   DmaDac::begin();
   DmaDac::setSource(chainOut);
 
+  pinMode(touchedOutPin, OUTPUT);
+
   tp1.begin(now);
   tp2.begin(now);
 
