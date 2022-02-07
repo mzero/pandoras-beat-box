@@ -199,7 +199,7 @@ void MixSource::supply(sample_t* buffer, int count) {
 }
 
 FilterSource::FilterSource(SoundSource& _in)
-  : in(_in), b0(0), b1(1)
+  : in(_in), b0(0), b1(0)
 {
   setFreqAndQ(2540.0f, 0.2f);
 }

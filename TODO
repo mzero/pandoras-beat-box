@@ -7,6 +7,8 @@
     - also accounting for delay volume
   [ ] feedback at maximum open
 
+[ ] don't cycle short samples - make one-shots
+
 [x] Calibration display should have top priority
 
 [ ] Filter and open/close
@@ -25,11 +27,11 @@
     - SCRAP the allpass - straight delay line works GREAT!
   [x] does it need the linear interp? NOPE
   [x] does it need DC leaking code? NOPE
-  [ ] noise burst on start?
-  [ ] noisy when delay changes - need better calc?
-  [ ] still need the clamp on the tank?
+  [x] noise burst on start? 'twas the filter ctor values!
+  [x] noisy when delay changes - need better calc?
+  [x] still need the clamp on the tank?
   [ ] does half speed delay line work well?
-  [ ] can changing the calculation format improve anything?
+  [x] can changing the calculation format improve anything?
 
 [ ] blinking yellow for "will load" is hard to see
 [ ] finder should re-search a few MS after last change to FS
