@@ -114,7 +114,7 @@ bool sweepLoop(millis_t now) {
       }
 
       filt.setFreqAndQ(55.0f*expf(cf), q);
-      gate1.gate(100, 0, 100, 10);
+      gate1.gate(0.9f);
 
       cf += cfInc;
       if (cf > cfMax) {
@@ -249,14 +249,26 @@ void loop() {
   if (playable) {
     bool touched = false;
     if (tp1.calibrated()) {
-      touched = touched || tp1.max() > tp1.threshold();
-      gate1.gate(tp1.max(),
-        TouchPad::value_t(200), TouchPad::value_t(800), tp1.threshold());
+      if (tp1.max() < tp1.threshold()) {
+        gate1.gateOff();
+      }
+      else {
+        touched = true;
+        gate1.gate(map_range_clamped(float(tp1.max()),
+          200.0f, 800.0f,   // touch range
+          0.5f, 0.9f));     // amp range
+      }
     }
     if (tp2.calibrated()) {
-      touched = touched || tp2.max() > tp2.threshold();
-      gate2.gate(tp2.max(),
-        TouchPad::value_t(200), TouchPad::value_t(800), tp2.threshold());
+      if (tp2.max() < tp2.threshold()) {
+        gate2.gateOff();
+      }
+      else {
+        touched = true;
+        gate2.gate(map_range_clamped(float(tp2.max()),
+          200.0f, 800.0f,   // touch range
+          0.5f, 0.9f));     // amp range
+      }
     }
     digitalWrite(touchedOutPin, touched);
 

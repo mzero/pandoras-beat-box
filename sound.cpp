@@ -112,6 +112,16 @@ void SampleGateSourceBase::load(const Samples& s) {
   startSample = 0;
   nextSample = 0;
 }
+void SampleGateSourceBase::gate(float a) {
+  if (ampTarget == amp_t(0))
+    nextSample = startSample;
+
+  ampTarget = amp_t(a);
+}
+
+void SampleGateSourceBase::gateOff() {
+  ampTarget = amp_t(0);
+}
 
 void SampleGateSourceBase::setPosition(float p) {
   int l = samples.length();

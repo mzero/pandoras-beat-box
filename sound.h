@@ -82,8 +82,8 @@ public:
   SampleGateSourceBase();
   void load(const Samples& s);
 
-  template<typename T>
-  void gate(T cv, T rangeMin, T rangeMax, T threshold);
+  void gate(float a);
+  void gateOff();
 
   void setPosition(float);
 
@@ -109,27 +109,6 @@ public:
 protected:
   virtual int sampleRate() const { return sample_rate; }
 };
-
-
-
-template<typename T>
-void SampleGateSourceBase::gate(T cv, T rangeMin, T rangeMax, T threshold) {
-  if (cv < threshold) {
-    ampTarget = amp_t(0);
-    return;
-  }
-  if (ampTarget == amp_t(0)) nextSample = startSample;
-
-  if (cv < rangeMin) cv = rangeMin;
-  if (cv > rangeMax) cv = rangeMax;
-
-  constexpr amp_t ampMin(0.5f);
-  constexpr amp_t ampMax(0.90f);
-  constexpr amp_t ampRange = ampMax - ampMin;
-
-  float cvf = float(cv - rangeMin) / float(rangeMax - rangeMin);
-  ampTarget = ampMin + amp_t(cvf)*ampRange;
-}
 
 
 class MixSource : public SoundSource {
