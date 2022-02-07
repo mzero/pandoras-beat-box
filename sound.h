@@ -167,24 +167,30 @@ public:
   void setDelayMod(float);    // 1.0 is base delay length
   void setFeedback(float);    // in range 0.0 to 1.0 (careful!)
 
+
   virtual void supply(sample_t* buffer, int count);
+
+  static constexpr float maxDelay = 0.150;
+  static constexpr float baseDelay = 0.080;
+  static constexpr float minDelay = 0.001;
+  static constexpr float maxMod = maxDelay / baseDelay;
+  static constexpr float minMod = minDelay / baseDelay;
 
 private:
   SoundSource& in;
 
-  static constexpr float maxDelay = 0.150;
-  static constexpr int maxDelaySamples = maxDelay * SAMPLE_RATE;
-
-  static constexpr float baseDelay = 0.080;
-  static constexpr int baseDelaySamples = baseDelay * SAMPLE_RATE;
-
-  using delay_t = UFixed<14,2>;
+  using delay_t = SFixed<15,16>;
   delay_t delay;
   delay_t delayTarget;
 
-  using calc_t = sample_t; // SFixed<7,24>;
-  calc_t feedback;
-  calc_t feedbackTarget;
+  sample_t feedback;
+  sample_t feedbackTarget;
+
+  static constexpr int maxDelaySamples = maxDelay * SAMPLE_RATE;
+  static constexpr int baseDelaySamples = baseDelay * SAMPLE_RATE;
+
+  static_assert(maxDelaySamples < 1 << delay_t::IntegerSize,
+    "delay_t integer portion isn't big enough");
 
   sample_t tank[maxDelaySamples];
   int writeP;

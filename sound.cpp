@@ -246,10 +246,10 @@ DelaySource::DelaySource(SoundSource& _in)
  }
 
 void DelaySource::setFeedback(float f) {
-  constexpr calc_t f_min(0.0f);
-  constexpr calc_t f_max(0.995f);
+  constexpr sample_t f_min(0.0f);
+  constexpr sample_t f_max(0.995f);
 
-  feedbackTarget = clamp(calc_t(f), f_min, f_max);
+  feedbackTarget = clamp(sample_t(f), f_min, f_max);
 }
 
 void DelaySource::setDelayMod(float d) {
@@ -264,20 +264,22 @@ void DelaySource::supply(sample_t* buffer, int count) {
   in.supply(buffer, count);
   while (count--) {
     int readP = writeP + int(delay);
-    calc_t v = calc_t(tank[readP % maxDelaySamples]);
-    calc_t in = calc_t(*buffer);
-    calc_t w = in + feedback * v;
-    w = clamp(w, sample_t(-2), sample_t(2));
-    tank[writeP] = sample_t(w);
+    sample_t v = tank[readP % maxDelaySamples];
+    sample_t in = *buffer;
+
+    constexpr sample_t two(2.0);
+    constexpr sample_t negtwo(-2.0);
+    sample_t w = in + feedback * v;
+    w = clamp(w, negtwo, two);
+
+    tank[writeP] = w;
     writeP = (writeP > 0 ? writeP : maxDelaySamples) - 1;
-    *buffer++ = sample_t(w);
+    *buffer++ = w;
 
-    constexpr float slew_exp(0.006);
-    // constexpr delay_t d_exp(slew_exp);
-    constexpr calc_t f_exp(slew_exp);
+    constexpr delay_t  d_exp(0.99988487737);  // -24dB over 500ms @ 48kHz
+    constexpr sample_t f_exp(0.97162795158);  // -24dB over 2ms @ 48kHz
 
-    auto ddd = (delayTarget - delay) * UFixed<16,16>(slew_exp);
-    delay = delayTarget - delay_t(ddd); //(delayTarget - delay) * d_exp);
+    delay = delayTarget - (delayTarget - delay) * d_exp;
     feedback = feedbackTarget - (feedbackTarget - feedback) * f_exp;
   }
 }
