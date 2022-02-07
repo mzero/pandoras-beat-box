@@ -78,7 +78,7 @@ void displayTouch(millis_t now) {
 void displayCalibration(millis_t now) {
   int v = tp1.calibrationTimeLeft(now) / 1000;
   for (int i=0; i<10; ++i)
-    CircuitPlayground.strip.setPixelColor(i, i <= v ? c_high : c_off);
+    CircuitPlayground.strip.setPixelColor(i, (9-i) <= v ? c_high : c_off);
 }
 
 

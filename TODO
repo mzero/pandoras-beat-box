@@ -33,7 +33,7 @@
   [ ] does half speed delay line work well?
   [x] can changing the calculation format improve anything?
 
-[ ] blinking yellow for "will load" is hard to see
+[x] blinking yellow for "will load" is hard to see
 [ ] finder should re-search a few MS after last change to FS
 
 [x] how much code is FS init taking up?

@@ -230,7 +230,7 @@ namespace {
   const auto c_found    = CircuitPlayground.strip.Color(200, 200, 200);
   const auto c_loaded   = CircuitPlayground.strip.Color(  0, 250,   0);
   const auto c_tooBig   = CircuitPlayground.strip.Color(250,   0,   0);
-  const auto c_selected = CircuitPlayground.strip.Color(200, 200,   0);
+  const auto c_selected = CircuitPlayground.strip.Color(100,   0,  250);
 
   int selectedPair = -1;
 
