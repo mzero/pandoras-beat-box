@@ -1,6 +1,12 @@
 #include "sound.h"
 #include "types.h"
 
+namespace {
+  inline void silence(sample_t*& buffer, int& count) {
+    while(count--) *buffer++ = SAMPLE_ZERO;
+  }
+}
+
 TriangleToneSource::TriangleToneSource()
   : theta(0), delta(0), amp(0), decay(0)
   { }
@@ -61,9 +67,7 @@ void SampleSource<int(SAMPLE_RATE)>::supply(sample_t* buffer, int count) {
     count -= 1;
     *buffer++ = sample_t(samples[nextSample++]*amp);
   }
-  while (count--) {
-    *buffer++ = SAMPLE_ZERO;
-  }
+  silence(buffer, count);
 }
 
 template<>
@@ -78,9 +82,7 @@ void SampleSource<int(SAMPLE_RATE/2)>::supply(sample_t* buffer, int count) {
     *buffer++ = sample_t((v + v) * a);
     *buffer++ = sample_t((v + w) * a);
   }
-  while (count--) {
-    *buffer++ = SAMPLE_ZERO;
-  }
+  silence(buffer, count);
 }
 
 template<>
@@ -97,18 +99,23 @@ void SampleSource<int(SAMPLE_RATE/4)>::supply(sample_t* buffer, int count) {
     *buffer++ = sample_t((v + v + w + w) * a);
     *buffer++ = sample_t((v + w + w + w) * a);
   }
-  while (count--) {
-    *buffer++ = SAMPLE_ZERO;
-  }
+  silence(buffer, count);
 }
 
 SampleGateSourceBase::SampleGateSourceBase()
-  : startSample(0), nextSample(0), amp(0), ampTarget(0)
+  : looped(false), startSample(0), nextSample(0), amp(0), ampTarget(0)
   { }
+
+void SampleGateSourceBase::load(const Samples& s) {
+  samples = s;
+  looped = samples.length() >= sampleRate() / 2;
+  startSample = 0;
+  nextSample = 0;
+}
 
 void SampleGateSourceBase::setPosition(float p) {
   int l = samples.length();
-  if (l < sampleRate() / 2) return;
+  if (!looped) return;
 
   startSample = int(float(l)*p) % l;
 }
@@ -117,68 +124,62 @@ void SampleGateSourceBase::setPosition(float p) {
 
 template<>
 void SampleGateSource<int(SAMPLE_RATE/2)>::supply(sample_t* buffer, int count) {
-  if (samples.length() < 1) {
-    while (count--) {
-      *buffer++ = SAMPLE_ZERO;
+  if (samples.length() > 0) {
+    while (count) {
+      if (!looped && nextSample >= samples.length()) break;
+      SFixed<15, 16> v(samples[nextSample++]);
+      if (looped && nextSample >= samples.length()) nextSample = 0;
+
+      SFixed<15, 16> w(samples[nextSample]);
+      SFixed<15, 16> a(amp);
+      a /= 2;
+
+      *buffer++ = sample_t((v + v) * a);
+      *buffer++ = sample_t((v + w) * a);
+      count -= 2;
+
+      /*
+        slew = (t * SR/2) root (-20dB)
+      */
+      constexpr amp_t slewUp(  0.92316169902);   // 1.2ms
+      constexpr amp_t slewDown(0.99887191858);   // 85ms
+
+      if (amp < ampTarget)  amp = ampTarget - (ampTarget - amp) * slewUp;
+      else                  amp = ampTarget + (amp - ampTarget) * slewDown;
     }
-    return;
   }
-
-  while (count) {
-    SFixed<15, 16> v(samples[nextSample++]);
-    if (nextSample >= samples.length()) nextSample = 0;
-
-    SFixed<15, 16> w(samples[nextSample]);
-    SFixed<15, 16> a(amp);
-    a /= 2;
-
-    *buffer++ = sample_t((v + v) * a);
-    *buffer++ = sample_t((v + w) * a);
-    count -= 2;
-
-    /*
-      slew = (t * SR/2) root (-20dB)
-    */
-    constexpr amp_t slewUp(  0.92316169902);   // 1.2ms
-    constexpr amp_t slewDown(0.99887191858);   // 85ms
-
-    if (amp < ampTarget)  amp = ampTarget - (ampTarget - amp) * slewUp;
-    else                  amp = ampTarget + (amp - ampTarget) * slewDown;
-  }
+  silence(buffer, count);
 }
 
 template<>
 void SampleGateSource<int(SAMPLE_RATE/4)>::supply(sample_t* buffer, int count) {
-  if (samples.length() < 1) {
-    while (count--) {
-      *buffer++ = SAMPLE_ZERO;
+  if (samples.length() > 0) {
+    while (count) {
+      if (!looped && nextSample >= samples.length()) break;
+      SFixed<15, 16> v(samples[nextSample++]);
+      if (looped && nextSample >= samples.length()) nextSample = 0;
+
+      SFixed<15, 16> w(samples[nextSample]);
+      SFixed<15, 16> a(amp);
+      a /= 4;
+
+      *buffer++ = sample_t((v + v + v + v) * a);
+      *buffer++ = sample_t((v + v + v + w) * a);
+      *buffer++ = sample_t((v + v + w + w) * a);
+      *buffer++ = sample_t((v + w + w + w) * a);
+      count -= 4;
+
+      /*
+        slew = (t * SR/4) root (-20dB)
+      */
+      constexpr amp_t slewUp(  0.85222752254f);   // 1.2ms
+      constexpr amp_t slewDown(0.99774510973f);   // 85ms
+
+      if (amp < ampTarget)  amp = ampTarget - (ampTarget - amp) * slewUp;
+      else                  amp = ampTarget + (amp - ampTarget) * slewDown;
     }
-    return;
   }
-
-  while (count) {
-    SFixed<15, 16> v(samples[nextSample++]);
-    if (nextSample >= samples.length()) nextSample = 0;
-
-    SFixed<15, 16> w(samples[nextSample]);
-    SFixed<15, 16> a(amp);
-    a /= 4;
-
-    *buffer++ = sample_t((v + v + v + v) * a);
-    *buffer++ = sample_t((v + v + v + w) * a);
-    *buffer++ = sample_t((v + v + w + w) * a);
-    *buffer++ = sample_t((v + w + w + w) * a);
-    count -= 4;
-
-    /*
-      slew = (t * SR/4) root (-20dB)
-    */
-    constexpr amp_t slewUp(  0.85222752254f);   // 1.2ms
-    constexpr amp_t slewDown(0.99774510973f);   // 85ms
-
-    if (amp < ampTarget)  amp = ampTarget - (ampTarget - amp) * slewUp;
-    else                  amp = ampTarget + (amp - ampTarget) * slewDown;
-  }
+  silence(buffer, count);
 }
 
 

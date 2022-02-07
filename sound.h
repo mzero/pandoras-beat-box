@@ -80,7 +80,7 @@ public:
 class SampleGateSourceBase : public SoundSource {
 public:
   SampleGateSourceBase();
-  void load(const Samples& s) { samples = s; }
+  void load(const Samples& s);
 
   template<typename T>
   void gate(T cv, T rangeMin, T rangeMax, T threshold);
@@ -91,6 +91,7 @@ protected:
   virtual int sampleRate() const = 0;
 
   Samples samples;
+  bool looped;
   int startSample;
   int nextSample;
 

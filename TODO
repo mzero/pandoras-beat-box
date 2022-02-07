@@ -7,7 +7,7 @@
     - also accounting for delay volume
   [ ] feedback at maximum open
 
-[ ] don't cycle short samples - make one-shots
+[x] don't cycle short samples - make one-shots
 
 [x] Calibration display should have top priority
 
