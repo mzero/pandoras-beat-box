@@ -271,9 +271,10 @@ void loop() {
         // these are static because they are filtered versions of the event
         // since the accellerometer values can be jumpy with quick user motions
 
-      x = (x + x + event.acceleration.x) / 3.0f;
-      y = (y + y + event.acceleration.y) / 3.0f;
-      z = (z + z + event.acceleration.z) / 3.0f;
+      constexpr float accel_slew(0.63095734448);  // -20dB in 500ms
+      x = event.acceleration.x - (event.acceleration.x - x) * accel_slew;
+      y = event.acceleration.y - (event.acceleration.y - y) * accel_slew;
+      z = event.acceleration.z - (event.acceleration.z - z) * accel_slew;
 
       float f = 30.0f * expf(map_range(y, -9.0f, 3.5f, 0.0f, 5.0f));
         // Maps -9 to 3.5 accel into 0 to 5.
@@ -287,8 +288,12 @@ void loop() {
       gate1.setPosition(g);
       gate2.setPosition(g);
 
-      delayPedal.setDelayMod(map_range(x, -4.0f, 4.0f, 0.80f, 1.20f));
-      delayPedal.setFeedback(map_range_clamped(z, -3.0f, 0.0f, 0.0f, 0.975f));
+      delayPedal.setDelayMod(map_range(x, 8.0f, -8.0f,
+          DelaySource::minMod, DelaySource::maxMod));
+
+      float k = 9.0f - z;
+      k = 324.0f - k * k;
+      delayPedal.setFeedback(map_range_clamped(k, 0.0f, 324.0f, 0.0f, 0.980f));
 
     }
   }
