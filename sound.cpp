@@ -127,7 +127,7 @@ void SampleGateSourceBase::setPosition(float p) {
   int l = samples.length();
   if (!looped) return;
 
-  startSample = int(float(l)*p) % l;
+  startSample = clamp(int(float(l)*p), 0, l - 1);
 }
 
 // TODO: Write the SAMPLE_RATE version of SampleGateSource::supply()
