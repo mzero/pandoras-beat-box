@@ -164,7 +164,7 @@ void setup() {
   CircuitPlayground.begin();
   CircuitPlayground.strip.setBrightness(5);
 
-  bool fsSetup = false;
+  bool fsSetup;
   {
     MessageHold msgHold;
 
@@ -177,11 +177,12 @@ void setup() {
     Serial.flush();
   }
 
-  if (fsSetup) {
-    Serial.println("File system is setup and happy!");
+  if (!fsSetup) {
+    Serial.println("File System is unhappy");
+    Serial.flush();
+    while (1) yield();
   }
 
-  // FIXME: what to do if fsSetup is false?
   SampleFinder::setup(fileSuffix);
 
   SampleFinder::FlashSamples fs = SampleFinder::flashSamples();

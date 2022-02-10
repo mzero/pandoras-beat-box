@@ -156,9 +156,9 @@ namespace elm_chan_fatfs {
         f_mkfs("", FM_FAT | FM_SFD, 0, workbuf, sizeof(workbuf))))
       return false;
 
-    if (checkFR("mount", f_mount(&elmchamFatfs, "", 1)))   return false;
-    if (checkFR("label", f_setlabel("MultiFlash")))        return false;
-    if (checkFR("unmount", f_unmount("")))                 return false;
+    if (checkFR("mount", f_mount(&elmchamFatfs, "", 1)))  return false;
+    if (checkFR("label", f_setlabel("BeatBox")))          return false;
+    if (checkFR("unmount", f_unmount("")))                return false;
 
     return true;
   }
@@ -186,30 +186,9 @@ bool setupFileSystem() {
   }
 
   if (!fatfs.begin(&flash)) {
-    statusMsg("Formatting internal flash");
-
-    if (!elm_chan_fatfs::format())
-      return false;
-
-    // sync to make sure all data is written to flash
-    flash.syncBlocks();
-
-    if (!fatfs.begin(&flash)) {
-      statusMsg("Format failure");
-      return false;
-    }
-
-    if (checkSD("mkdir", fatfs.mkdir("/.fseventsd")))         return false;
-    if (checkSD("touch 1", touch("/.fseventsd/no_log")))      return false;
-    if (checkSD("touch 2", touch("/.metadata_never_index")))  return false;
-    if (checkSD("touch 3", touch("/.Trashes")))               return false;
-
-    // sync to make sure all data is written to flash
-    flash.syncBlocks();
-
-    statusMsg("Done, resetting....");
-    Watchdog.enable(2000);
-    delay(3000);
+    errorMsg("File system needs initialization.");
+    errorMsg("Flash with the pbb-fs-init program.");
+    return false;
   }
 
   if (!setupMSC()) {
@@ -220,3 +199,42 @@ bool setupFileSystem() {
   return true;
 }
 
+bool initFileSystem(bool force) {
+  if (!flash.begin()) {
+    errorMsg("Failed to initialize flash chip.");
+    return false;
+  }
+
+  if (!force) {
+    if (fatfs.begin(&flash)) {
+      statusMsg("Already formatted, it seems.");
+      return true;
+    }
+  }
+
+  statusMsg("Formatting internal flash");
+  if (!elm_chan_fatfs::format()) {
+    errorMsg("Format return failure");
+    return false;
+  }
+
+  // sync to make sure all data is written to flash
+  flash.syncBlocks();
+
+  if (!fatfs.begin(&flash)) {
+  errorMsg("Format did not work");
+    return false;
+  }
+
+  if (checkSD("mkdir", fatfs.mkdir("/.fseventsd")))         return false;
+  if (checkSD("touch 1", touch("/.fseventsd/no_log")))      return false;
+  if (checkSD("touch 2", touch("/.metadata_never_index")))  return false;
+  if (checkSD("touch 3", touch("/.Trashes")))               return false;
+
+  // sync to make sure all data is written to flash
+  flash.syncBlocks();
+
+  statusMsg("Done, resetting....");
+  Watchdog.enable(2000);
+  delay(3000);
+}
