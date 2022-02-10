@@ -290,9 +290,9 @@ void loop() {
         // covering 30Hz to 4,452Hz.
         // Note that accel ranges about ±9, but the filter code will
         // correctly bound the range possible with the filter.
-      filt.setFreqAndQ(f, 0.6f);
+      filt.setFreqAndQ(f, 0.55f);
 
-      float g = map_range_clamped(x, -4.0f, 4.0f, 0.0f, 1.0f);
+      float g = map_range_clamped(x, -5.0f, 5.0f, 0.0f, 1.0f);
       gate1.setPosition(g);
       gate2.setPosition(g);
 

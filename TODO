@@ -9,13 +9,14 @@
 
 [ ] finder should re-search a few MS after last change to FS
 
-[ ] review code size
+
+[ ] disable wait for serial on start
 
 [ ] on board speaker toggle
   [ ] start with off? or on? depends on how loud it is in the box....
 
-[ ] still have occasional noise bursts...
-
+[x] still have occasional noise bursts...
+    -- was the filter and high q at higher frequencies
 
 ## HW
 
@@ -23,6 +24,10 @@
 ## Later
 
 [] Lightshow of some sort?
+
+[ ] review code size
+  [ ] remove old testing code
+  [ ] review print statements
 
 
 ## Future
