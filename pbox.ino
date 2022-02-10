@@ -202,10 +202,6 @@ void setup() {
   Serial.printf("sram used: %d static, %d post-init\n", s0, s1);
 }
 
-const int readingsCount = 10;
-uint16_t readings[readingsCount];
-int readingsNext = 0;
-
 
 void loop() {
   auto now = millis();
@@ -229,7 +225,7 @@ void loop() {
       tp1.calibrate();
     }
     // if (sweepLoop(now)) playable = false;
-    if (testToneLoop(now)) playable = false;
+    // if (testToneLoop(now)) playable = false;
   } else {
     // Sample Finder Mode
     if (!finderMode) {
