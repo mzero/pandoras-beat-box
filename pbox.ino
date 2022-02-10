@@ -173,7 +173,7 @@ void setup() {
     waitForSerial();
     Serial.println();
     Serial.println("> : ~ : .. : Pandora's Drumming Box : .. : ~ : <");
-    Serial.println();
+    Serial.println("> v001");
     Serial.flush();
   }
 
