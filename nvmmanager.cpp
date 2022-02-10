@@ -1,12 +1,19 @@
 #include "nvmmanager.h"
 
-extern uint32_t __etext;
+extern uint8_t __etext;
+extern uint8_t __data_start__;
+extern uint8_t __data_end__;
 
 namespace NvmManager {
 
   void* dataBegin() {
-    const uint32_t program_end = (uint32_t)&__etext;
-    const size_t program_size = 120 * 1024;
+    const uint32_t program_end =
+      (uint32_t)&__etext + (&__data_end__ - &__data_start__);
+      // The pre-initialized data area is stored after the .text segment
+      // but has no linker symbols... but is the same size of the data area
+      // in RAM.
+
+    const size_t program_size = 100 * 1024;
     uint32_t begin = FLASH_ADDR + program_size;
 
     if (begin < program_end) {

@@ -7,59 +7,27 @@
     - also accounting for delay volume
   [ ] feedback at maximum open
 
-[x] don't cycle short samples - make one-shots
-
-[x] Calibration display should have top priority
-
-[ ] Filter and open/close
-  [x] limit upper edge of filter (perhaps drop Q?) so no overflow
-  [-] NOPE: reduce top gain on samples?
-  [-] NOPE: when lid is 45° need to swap to Z not X (and now signal open)
-
-[ ] Delay
-  [x] does it need wed/dry code?
-    [x] w/o it, is there too much delay
-    [x] with it, does it no longer sound right?
-    [x] with it, do you need the all pass code or is simple delay enough?
-    - with wet/dry in, and set all wet, there seems to be no lag: still hear
-    - the dry sound first.  at half wet/dry, there is deminishing I think
-    - because of phase offset?
-    - SCRAP the allpass - straight delay line works GREAT!
-  [x] does it need the linear interp? NOPE
-  [x] does it need DC leaking code? NOPE
-  [x] noise burst on start? 'twas the filter ctor values!
-  [x] noisy when delay changes - need better calc?
-  [x] still need the clamp on the tank?
-  [ ] does half speed delay line work well?
-  [x] can changing the calculation format improve anything?
-
-[x] blinking yellow for "will load" is hard to see
 [ ] finder should re-search a few MS after last change to FS
 
-[x] how much code is FS init taking up?
-  about 7k
-
-HW:
-[x] go back to 1M touch resistors
-[-] revisit opAmp gain - maybe more?
-[x] check wiring from LiPo port on CPE+
-[~] work out wiring harnesses
+[ ] review code size
 
 [ ] on board speaker toggle
   [ ] start with off? or on? depends on how loud it is in the box....
 
-[ ] how to keep lid open without holding it
+[ ] still have occasional noise bursts...
+
+
+## HW
 
 
 ## Later
-
-[] on open lid, invert env.
 
 [] Lightshow of some sort?
 
 
 ## Future
 
+[ ] does half speed delay line work well?
 [ ] why is 12kHz sampling actually 13.7kHz?
 [ ] DMA and FatFile issue?
 

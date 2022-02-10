@@ -74,3 +74,8 @@ For example, to reach within -24dB after 2ms stepping at 48kHz:
 [1] Input this into Wolfram Alpha to get the solution:
 
     v(0)=x, v(n+1)=y - (y - v(n))q
+
+
+## Code size
+
+how much code is FS init taking up? about 7k
