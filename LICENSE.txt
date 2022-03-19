@@ -1,0 +1,20 @@
+Open Hardware
+-------------
+The hardware design, and all files other than software, are governed by the
+Creative Commons Attribution-ShareAlike 3.0 Unported license.
+
+See the file LICENSE-HW.txt
+
+
+Open Software
+-------------
+The software in this repository, is goverened by a BSD 3-clause license.
+
+See the file LICENSE-SW.txt
+
+In order to format the FatFS on the flash drive like SdFat_format does, this
+project also contains a copy of some of elm-chan's FatFs source. It is in the
+`elm-chan` directory and retains its own copyright and license.
+
+This project makes use of the FixedPoints library, which asks me to let you
+know that it is published under an Apache 2.0 license.
